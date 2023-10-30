@@ -1,0 +1,48 @@
+version: '3.3'
+services:
+
+  provider-connector:
+    container_name: provider-connector
+    image: my-java-app:latest
+    environment:
+      - EDC_KEYSTORE=certs/cert.pfx
+      - EDC_KEYSTORE_PASSWORD=123456
+      - EDC_VAULT=http-pull-provider/provider-vault.properties
+      - EDC_FS_CONFIG=http-pull-provider/provider-configuration.properties
+    ports:
+      - 19191:19191
+      - 19193:19193
+      - 19194:19194
+      - 19291:19291
+      - 19192:19192
+    volumes:
+      - ./certs/cert.pfx:/app/certs/cert.pfx
+      - ./http-pull-provider/provider-configuration.properties:/app/http-pull-provider/provider-configuration.properties
+      - ./http-pull-provider/provider-vault.properties:/app/http-pull-provider/provider-vault.properties
+    networks:
+      - ldes
+
+  consumer-connector:
+    container_name: consumer-connector
+    image: my-java-app:latest
+    environment:
+      - EDC_KEYSTORE=certs/cert.pfx
+      - EDC_KEYSTORE_PASSWORD=123456
+      - EDC_VAULT=http-pull-consumer/consumer-vault.properties
+      - EDC_FS_CONFIG=http-pull-consumer/consumer-configuration.properties
+    ports:
+      - 29191:29191
+      - 29193:29193
+      - 29194:29194
+      - 29291:29291
+      - 29192:29192
+    volumes:
+      - ./certs/cert.pfx:/app/certs/cert.pfx
+      - ./http-pull-consumer/consumer-configuration.properties:/app/http-pull-consumer/consumer-configuration.properties
+      - ./http-pull-consumer/consumer-vault.properties:/app/http-pull-consumer/consumer-vault.properties
+    networks:
+      - ldes
+
+networks:
+  ldes:
+    name: ldes_connector_network
