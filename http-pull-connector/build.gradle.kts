@@ -4,8 +4,7 @@ plugins {
     alias(libs.plugins.shadow)
 }
 
-group = "be.vlaanderen.informatievlaanderen.ldes"
-version = "unspecified"
+group = "org.eclipse.edc"
 
 repositories {
     mavenCentral()
