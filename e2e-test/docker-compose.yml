@@ -3,7 +3,7 @@ services:
 
   provider-connector:
     container_name: connector_provider-connector
-    image: my-java-app:latest
+    image: vsds-dataspace-connector:local
     environment:
       - EDC_KEYSTORE=certs/cert.pfx
       - EDC_KEYSTORE_PASSWORD=123456
@@ -26,7 +26,7 @@ services:
 
   consumer-connector:
     container_name: connector_consumer-connector
-    image: my-java-app:latest
+    image: vsds-dataspace-connector:local
     environment:
       - EDC_KEYSTORE=certs/cert.pfx
       - EDC_KEYSTORE_PASSWORD=123456

@@ -109,10 +109,16 @@ This property is used to define the endpoint exposed by the control plane to val
 
 ## Run the connectors
 
-To start the connectors, just run the following command
-
 !! NOTE: The LdesClient cannot yet handle this callback message. We currently configure a [webhook](https://webhook.site/#!/2c446e2e-5c19-4fbf-aaeb-b9c76d115fa8/cdbf7bce-1676-4383-a172-224c58aa336f/1)
 for the edc.receiver.http.endpoint property.
+
+Before we can start the connectors, we are going to build the image:
+
+```bash
+docker build -t vsds-dataspace-connector:local ../.
+```
+
+After building the image, we can start the connectors with the following command:
 
 ```bash
 docker compose --profile connectors up -d
@@ -467,16 +473,20 @@ curl -X POST "http://localhost:29193/management/v2/transferprocesses" \
     -H "Content-Type: application/json" \
     -d '{
         "@context": {
-          "edc": "https://w3id.org/edc/v0.0.1/ns/"
+          "@vocab": "https://w3id.org/edc/v0.0.1/ns/"
         },
-        "@type": "TransferRequestDto",
+        "@type": "TransferRequest",
         "connectorId": "provider",
-        "connectorAddress": "http://provider-connector:19194/protocol",
-        "contractId": "<contract agreement id>",
+        "connectorAddress": "http://provider-connector:29194/protocol",
+        "contractId": "MQ==:ZGV2aWNlcw==:Nzk4N2UwODgtNDY5Ni00ZTllLTkxNWItMTRlY2NkYzFlYzk5",
         "assetId": "devices",
         "protocol": "dataspace-protocol-http",
-        "dataDestination": { 
-          "type": "HttpProxy" 
+        "dataDestination": {
+          "@type": "DataAddress",
+          "type": "HttpProxy"
+        },
+        "privateProperties": {
+          "receiverHttpEndpoint" : "https://webhook.site/4a337be3-e159-4186-acaf-9296d8ea41e0"
         }
     }' \
     -s | jq
