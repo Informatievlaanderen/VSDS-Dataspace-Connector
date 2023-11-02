@@ -193,7 +193,7 @@ curl -d '{
              "edc": "https://w3id.org/edc/v0.0.1/ns/"
            },
            "asset": {
-             "@id": "assetId",
+             "@id": "devices",
              "properties": {
                "name": "product description",
                "contenttype": "application/json"
@@ -302,15 +302,15 @@ Sample output:
   "@id": "31f6d748-d35b-4dec-9e34-d141fd17b458",
   "@type": "dcat:Catalog",
   "dcat:dataset": {
-    "@id": "assetId",
+    "@id": "devices",
     "@type": "dcat:Dataset",
     "odrl:hasPolicy": {
-      "@id": "MQ==:YXNzZXRJZA==:YTc4OGEwYjMtODRlZi00NWYwLTgwOWQtMGZjZTMwMGM3Y2Ey",
+      "@id": "MQ==:ZGV2aWNlcw==:ZWQxM2JkZGQtMWM5MC00YzkzLThiMjMtNzRkNWJlMjllMmRk",
       "@type": "odrl:Set",
       "odrl:permission": [],
       "odrl:prohibition": [],
       "odrl:obligation": [],
-      "odrl:target": "assetId"
+      "odrl:target": "devices"
     },
     "dcat:distribution": [
       {
@@ -329,7 +329,7 @@ Sample output:
       }
     ],
     "edc:name": "product description",
-    "edc:id": "assetId",
+    "edc:id": "devices",
     "edc:contenttype": "application/json"
   },
   "dcat:service": {
@@ -380,15 +380,15 @@ curl -d '{
   "providerId": "provider",
   "protocol": "dataspace-protocol-http",
   "offer": {
-   "offerId": "MQ==:YXNzZXRJZA==:YTc4OGEwYjMtODRlZi00NWYwLTgwOWQtMGZjZTMwMGM3Y2Ey",
-   "assetId": "assetId",
+   "offerId": "MQ==:ZGV2aWNlcw==:ZWQxM2JkZGQtMWM5MC00YzkzLThiMjMtNzRkNWJlMjllMmRk",
+   "assetId": "devices",
    "policy": {
-     "@id": "MQ==:YXNzZXRJZA==:YTc4OGEwYjMtODRlZi00NWYwLTgwOWQtMGZjZTMwMGM3Y2Ey",
+     "@id": "MQ==:ZGV2aWNlcw==:ZWQxM2JkZGQtMWM5MC00YzkzLThiMjMtNzRkNWJlMjllMmRk",
      "@type": "Set",
      "odrl:permission": [],
      "odrl:prohibition": [],
      "odrl:obligation": [],
-     "odrl:target": "assetId"
+     "odrl:target": "devices"
    }
   }
 }' -X POST -H 'content-type: application/json' http://localhost:29193/management/v2/contractnegotiations \
@@ -432,7 +432,7 @@ Sample output:
   "edc:state": "FINALIZED",
   "edc:counterPartyAddress": "http://provider-connector:19194/protocol",
   "edc:callbackAddresses": [],
-  "edc:contractAgreementId": "MQ==:YXNzZXRJZA==:YTc4OGEwYjMtODRlZi00NWYwLTgwOWQtMGZjZTMwMGM3Y2Ey",
+  "edc:contractAgreementId": "MQ==:ZGV2aWNlcw==:ZWQxM2JkZGQtMWM5MC00YzkzLThiMjMtNzRkNWJlMjllMmRk",
   "@context": {
     "dct": "https://purl.org/dc/terms/",
     "edc": "https://w3id.org/edc/v0.0.1/ns/",
@@ -473,7 +473,7 @@ curl -X POST "http://localhost:29193/management/v2/transferprocesses" \
         "connectorId": "provider",
         "connectorAddress": "http://provider-connector:19194/protocol",
         "contractId": "<contract agreement id>",
-        "assetId": "assetId",
+        "assetId": "devices",
         "protocol": "dataspace-protocol-http",
         "dataDestination": { 
           "type": "HttpProxy" 
@@ -547,10 +547,18 @@ At the end, and to be sure that you correctly achieved the pull, you can check i
 is the same as the one you can get at https://jsonplaceholder.typicode.com/users
 
 
-Since we configured the `HttpData` with `proxyPath`, we could also ask for a specific user with:
+Since we configured the `HttpData` with `proxyPath` and `proxyQueryParams`, we could also ask for a specific user with:
 
 ```bash
-curl --location --request GET 'http://localhost:29291/public/1' --header 'Authorization: <auth code>'
+curl --location --request GET 'http://localhost:29291/public/paged?pageNumber=1' --header 'Authorization: <auth code>'
 ```
 
 And the data returned will be the same as in https://jsonplaceholder.typicode.com/users/1
+
+# Test Teardown
+To stop all systems use:
+```bash
+docker compose --profile connectors down
+docker compose --profile delay-started down
+docker compose down
+```

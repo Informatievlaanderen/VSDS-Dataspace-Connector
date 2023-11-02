@@ -1,3 +1,4 @@
 /.idea/
 /.gradle/
 **/build/
+/e2e-test/data/epsg/
