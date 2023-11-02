@@ -2,7 +2,7 @@ version: '3.3'
 services:
 
   provider-connector:
-    container_name: provider-connector
+    container_name: connector_provider-connector
     image: my-java-app:latest
     environment:
       - EDC_KEYSTORE=certs/cert.pfx
@@ -21,9 +21,11 @@ services:
       - ./http-pull-provider/provider-vault.properties:/app/http-pull-provider/provider-vault.properties
     networks:
       - ldes
+    profiles:
+      - connectors
 
   consumer-connector:
-    container_name: consumer-connector
+    container_name: connector_consumer-connector
     image: my-java-app:latest
     environment:
       - EDC_KEYSTORE=certs/cert.pfx
@@ -40,6 +42,57 @@ services:
       - ./certs/cert.pfx:/app/certs/cert.pfx
       - ./http-pull-consumer/consumer-configuration.properties:/app/http-pull-consumer/consumer-configuration.properties
       - ./http-pull-consumer/consumer-vault.properties:/app/http-pull-consumer/consumer-vault.properties
+    networks:
+      - ldes
+    profiles:
+      - connectors
+
+  test-message-generator:
+    container_name: connector_test-message-generator
+    image: ghcr.io/informatievlaanderen/test-message-generator:latest
+    environment:
+      - TARGETURL=http://ldio-server-seeder:8080/seed-server
+      - SILENT=false
+      - CRON=* * * * * *
+      - TEMPLATEFILE=/tmp/data/device.template.json
+      - MIMETYPE=application/ld+json
+    volumes:
+      - ./data/device.template.json:/tmp/data/device.template.json:ro
+    networks:
+      - ldes
+    profiles:
+      - delay-started
+
+  ldio-server-seeder:
+    image: ghcr.io/informatievlaanderen/ldi-orchestrator:latest
+    container_name: connector_ldio-server-seeder
+    volumes:
+      - ./ldio-server-seeder.yml:/ldio/config/application.yml:ro
+    networks:
+      - ldes
+    depends_on:
+      - ldes-server
+
+  ldes-server:
+    container_name: connector_ldes-server
+    image: ghcr.io/informatievlaanderen/ldes-server:latest
+    environment:
+      - SIS_DATA=/tmp
+    volumes:
+      - ./config/ldes-server.config.yml:/application.yml:ro
+      - ./data/epsg:/tmp/Databases:rw
+    ports:
+      - 8081:8081 # needed for admin API
+    networks:
+      - ldes
+    depends_on:
+      - ldes-mongodb
+
+  ldes-mongodb:
+    container_name: connector_ldes-mongodb
+    image: mongo:latest
+    ports:
+      - 27017:27017
     networks:
       - ldes
 

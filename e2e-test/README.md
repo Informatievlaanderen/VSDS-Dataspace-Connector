@@ -12,6 +12,7 @@ have to pass so that the consumer can have access to the data, held by the provi
 
 Those steps are the following:
 
+* Prepare the LDES Server
 * Running the provider connector
 * Running the consumer connector
 * Running a Http server that will receive the Endpoint Data Reference on the consumer side, that
@@ -36,6 +37,42 @@ Once the catalog is available, to access the data, the consumer should follow th
 
 > For the sake of simplicity, we will use an in-memory catalog and fill it with just one single
 > asset. This will be deleted after the provider shutdown.
+
+# Server setup
+
+To prepare the LDES Server we use the following containers:
+- ldes-server: The actual server.
+- test-message-generator: Generates messages to seed the server with data.
+- ldio-server-seeder: ETL pipeline between the message generator and the server to insert the generated data into the server.
+- ldes-mongodb: Data persistence used by the server.
+
+Start the LDES Server:
+
+```bash
+docker compose up -d
+```
+
+Please ensure that the LDES Server is ready to ingest by following the container log until you see the following message `Cancelled mongock lock daemon`:
+```bash
+docker logs --tail 1000 -f $(docker ps -q --filter "name=ldes-server$")
+```
+Press `CTRL-C` to stop following the log.
+
+> **Note**: as of server v1.0 which uses dynamic configuration you need to execute the [seed script](./config/seed.sh) to setup the LDES with its views:
+```bash
+chmod +x ./config/seed.sh
+sh ./config/seed.sh
+```
+
+Seed the LDES Server by starting the message generator:
+   ```bash
+   docker compose up test-message-generator -d
+   ```
+
+Verify that messages are correctly ingested by the server:
+```bash
+curl http://localhost:8081/devices/paged?pageNumber=1
+```
 
 ### Provider connector
 
@@ -78,7 +115,7 @@ To start the connectors, just run the following command
 for the edc.receiver.http.endpoint property.
 
 ```bash
-docker compose up -d
+docker compose --profile connectors up -d
 ```
 
 Assuming you didn't change the ports in config files, the consumer will listen on the
@@ -165,7 +202,7 @@ curl -d '{
            "dataAddress": {
              "type": "HttpData",
              "name": "Test asset",
-             "baseUrl": "http://localhost:8080/parcels",
+             "baseUrl": "http://ldes-server:8081/devices",
              "proxyPath": "true",
              "proxyQueryParams": "true"
            }
