@@ -201,8 +201,8 @@ curl -d '{
            "asset": {
              "@id": "devices",
              "properties": {
-               "name": "product description",
-               "contenttype": "application/json"
+               "name": "device models",
+               "contenttype": "application/n-quads"
              }
            },
            "dataAddress": {
@@ -210,7 +210,8 @@ curl -d '{
              "name": "Test asset",
              "baseUrl": "http://ldes-server:8081/devices",
              "proxyPath": "true",
-             "proxyQueryParams": "true"
+             "proxyQueryParams": "true",
+             "header:Accept": "application/n-quads"
            }
          }' -H 'content-type: application/json' http://localhost:19193/management/v2/assets \
          -s | jq
