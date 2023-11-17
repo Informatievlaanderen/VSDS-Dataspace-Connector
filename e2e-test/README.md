@@ -109,9 +109,6 @@ This property is used to define the endpoint exposed by the control plane to val
 
 ## Run the connectors
 
-!! NOTE: The LdesClient cannot yet handle this callback message. We currently configure a [webhook](https://webhook.site/#!/2c446e2e-5c19-4fbf-aaeb-b9c76d115fa8/cdbf7bce-1676-4383-a172-224c58aa336f/1)
-for the edc.receiver.http.endpoint property.
-
 Before we can start the connectors, we are going to build the image:
 
 ```bash
@@ -211,6 +208,7 @@ curl -d '{
              "baseUrl": "http://ldes-server:8081/devices",
              "proxyPath": "true",
              "proxyQueryParams": "true",
+             "contenttype": "application/n-quads",
              "header:Accept": "application/n-quads"
            }
          }' -H 'content-type: application/json' http://localhost:19193/management/v2/assets \
@@ -312,7 +310,7 @@ Sample output:
     "@id": "devices",
     "@type": "dcat:Dataset",
     "odrl:hasPolicy": {
-      "@id": "MQ==:ZGV2aWNlcw==:ZWQxM2JkZGQtMWM5MC00YzkzLThiMjMtNzRkNWJlMjllMmRk",
+      "@id": "MQ==:ZGV2aWNlcw==:ZDI2Yjc3YWQtMTg1OC00MGI4LWFmMWQtM2U2NTBlZTQwOGFm",
       "@type": "odrl:Set",
       "odrl:permission": [],
       "odrl:prohibition": [],
@@ -387,10 +385,10 @@ curl -d '{
   "providerId": "provider",
   "protocol": "dataspace-protocol-http",
   "offer": {
-   "offerId": "MQ==:ZGV2aWNlcw==:ZWQxM2JkZGQtMWM5MC00YzkzLThiMjMtNzRkNWJlMjllMmRk",
+   "offerId": "MQ==:ZGV2aWNlcw==:ZDI2Yjc3YWQtMTg1OC00MGI4LWFmMWQtM2U2NTBlZTQwOGFm",
    "assetId": "devices",
    "policy": {
-     "@id": "MQ==:ZGV2aWNlcw==:ZWQxM2JkZGQtMWM5MC00YzkzLThiMjMtNzRkNWJlMjllMmRk",
+     "@id": "MQ==:ZGV2aWNlcw==:ZDI2Yjc3YWQtMTg1OC00MGI4LWFmMWQtM2U2NTBlZTQwOGFm",
      "@type": "Set",
      "odrl:permission": [],
      "odrl:prohibition": [],
@@ -413,7 +411,22 @@ Sample output:
 }
 ```
 
-### 8. Getting the contract agreement id
+### 8. Start the workbench with the LdesClient
+
+```bash
+   docker compose up ldio-workbench -d
+```
+
+Wait for the workbench to start up properly logging "Started Application":
+```bash
+docker logs --tail 1000 -f $(docker ps -q --filter "name=ldio-workbench$")
+```
+
+By now you should see a new info log line stating that the pipeline is waiting for a token.
+The client will wait for a valid token before it starts consuming the LDES.
+To get a token, we need to negotiate a contract and start a transfer.
+
+### 9. Getting the contract agreement id
 
 After calling the endpoint for initiating a contract negotiation, we get a UUID as the response.
 This UUID is the ID of the ongoing contract negotiation between consumer and provider. The
@@ -439,7 +452,7 @@ Sample output:
   "edc:state": "FINALIZED",
   "edc:counterPartyAddress": "http://provider-connector:19194/protocol",
   "edc:callbackAddresses": [],
-  "edc:contractAgreementId": "MQ==:ZGV2aWNlcw==:ZWQxM2JkZGQtMWM5MC00YzkzLThiMjMtNzRkNWJlMjllMmRk",
+  "edc:contractAgreementId": "MQ==:ZGV2aWNlcw==:ZDI2Yjc3YWQtMTg1OC00MGI4LWFmMWQtM2U2NTBlZTQwOGFm",
   "@context": {
     "dct": "https://purl.org/dc/terms/",
     "edc": "https://w3id.org/edc/v0.0.1/ns/",
@@ -450,17 +463,10 @@ Sample output:
 }
 ```
 
-### 9. Start the transfer
+### 10. Start the transfer
 
-As a pre-requisite, you need to have an http server that runs on port 4000 and logs all the incoming requests, it will
-be mandatory to get the EndpointDataReference that will be used to get the data.
-
-```bash
-./gradlew util:http-request-logger:build
-HTTP_SERVER_PORT=4002 java -jar util/http-request-logger/build/libs/http-request-logger.jar
-```
-
-Now that we have a contract agreement, we can finally request the file. In the request body, we need
+Now that we have a contract agreement and our client is running, 
+we can finally start consuming the LDES. In the request body, we need
 to specify which asset we want transferred, the ID of the contract agreement, the address of the
 provider connector and where we want the file transferred. You will find the request body below.
 Before executing the request, insert the contract agreement ID from the previous step. Then run :
@@ -470,7 +476,7 @@ Before executing the request, insert the contract agreement ID from the previous
 > datasource
 
 ```bash
-curl -X POST "http://localhost:29193/management/v2/transferprocesses" \
+curl -X POST "http://localhost:8082/client-pipeline/transfer" \
     -H "Content-Type: application/json" \
     -d '{
         "@context": {
@@ -478,7 +484,7 @@ curl -X POST "http://localhost:29193/management/v2/transferprocesses" \
         },
         "@type": "TransferRequest",
         "connectorId": "provider",
-        "connectorAddress": "http://provider-connector:29194/protocol",
+        "connectorAddress": "http://provider-connector:19194/protocol",
         "contractId": "MQ==:ZGV2aWNlcw==:Nzk4N2UwODgtNDY5Ni00ZTllLTkxNWItMTRlY2NkYzFlYzk5",
         "assetId": "devices",
         "protocol": "dataspace-protocol-http",
@@ -487,7 +493,7 @@ curl -X POST "http://localhost:29193/management/v2/transferprocesses" \
           "type": "HttpProxy"
         },
         "privateProperties": {
-          "receiverHttpEndpoint" : "https://webhook.site/4a337be3-e159-4186-acaf-9296d8ea41e0"
+          "receiverHttpEndpoint" : "http://ldio-workbench:8082/client-pipeline/token"
         }
     }' \
     -s | jq
@@ -509,7 +515,7 @@ Sample output:
 }
 ```
 
-### 10. Check the transfer status
+### 11. Check the transfer status
 
 Due to the nature of the transfer, it will be very fast and most likely already done by the time you
 read the UUID.
@@ -530,41 +536,11 @@ You should see the Transfer Process in `COMPLETED` state:
 
 ```
 
-### 11. Pull the data
-
-At this step, if you look at the http server logs, you will find a json representing the EndpointDataReference, needed
-to get the data from the provider:
-
-```json
-{
-  "id": "77a3551b-08da-4f81-b61d-fbc0c86c1069",
-  "endpoint": "http://localhost:29291/public/",
-  "authKey": "Authorization",
-  "authCode": "eyJhbGciOiJSUzI1NiJ9.eyJkYWQiOiJ7XCJwcm9wZXJ0aWVzXCI6e1wiYXV0aEtleVwiOlwiQXV0aG9yaXphdGlvblwiLFwiYmFzZVVybFwiOlwiaHR0cDpcL1wvbG9jYWxob3N0OjE5MjkxXC9wdWJsaWNcL1wiLFwiYXV0aENvZGVcIjpcImV5SmhiR2NpT2lKU1V6STFOaUo5LmV5SmtZV1FpT2lKN1hDSndjbTl3WlhKMGFXVnpYQ0k2ZTF3aVltRnpaVlZ5YkZ3aU9sd2lhSFIwY0hNNlhDOWNMMnB6YjI1d2JHRmpaV2h2YkdSbGNpNTBlWEJwWTI5a1pTNWpiMjFjTDNWelpYSnpYQ0lzWENKdVlXMWxYQ0k2WENKVVpYTjBJR0Z6YzJWMFhDSXNYQ0owZVhCbFhDSTZYQ0pJZEhSd1JHRjBZVndpZlgwaUxDSmxlSEFpT2pFMk56UTFPRGcwTWprc0ltTnBaQ0k2SWpFNk1XVTBOemc1TldZdE9UQXlOUzAwT1dVeExUazNNV1F0WldJNE5qVmpNemhrTlRRd0luMC5ITFJ6SFBkT2IxTVdWeWdYZi15a0NEMHZkU3NwUXlMclFOelFZckw5eU1tQjBzQThwMHFGYWV0ZjBYZHNHMG1HOFFNNUl5NlFtNVU3QnJFOUwxSE5UMktoaHFJZ1U2d3JuMVhGVUhtOERyb2dSemxuUkRlTU9ZMXowcDB6T2MwNGNDeFJWOEZoemo4UnVRVXVFODYwUzhqbU4wZk5sZHZWNlFpUVFYdy00QmRTQjNGYWJ1TmFUcFh6bDU1QV9SR2hNUGphS2w3RGsycXpJZ0ozMkhIdGIyQzhhZGJCY1pmRk12aEM2anZ2U1FieTRlZXU0OU1hclEydElJVmFRS1B4ajhYVnI3ZFFkYV95MUE4anNpekNjeWxyU3ljRklYRUV3eHh6Rm5XWmczV2htSUxPUFJmTzhna2RtemlnaXRlRjVEcmhnNjZJZzJPR0Eza2dBTUxtc3dcIixcInByb3h5TWV0aG9kXCI6XCJ0cnVlXCIsXCJwcm94eVF1ZXJ5UGFyYW1zXCI6XCJ0cnVlXCIsXCJwcm94eUJvZHlcIjpcInRydWVcIixcInR5cGVcIjpcIkh0dHBEYXRhXCIsXCJwcm94eVBhdGhcIjpcInRydWVcIn19IiwiZXhwIjoxNjc0NTg4NDI5LCJjaWQiOiIxOjFlNDc4OTVmLTkwMjUtNDllMS05NzFkLWViODY1YzM4ZDU0MCJ9.WhbTzERmM75mNMUG2Sh-8ZW6uDQCus_5uJPvGjAX16Ucc-2rDcOhAxrHjR_AAV4zWjKBHxQhYk2o9jD-9OiYb8Urv8vN4WtYFhxJ09A0V2c6lB1ouuPyCA_qKqJEWryTbturht4vf7W72P37ERo_HwlObOuJMq9CS4swA0GBqWupZHAnF-uPIQckaS9vLybJ-gqEhGxSnY4QAZ9-iwSUhkrH8zY2GCDkzAWIPmvtvRhAs9NqVkoUswG-ez1SUw5bKF0hn2OXv_KhfR8VsKKYUbKDQf5Wagk7rumlYbXMPNAEEagI4R0xiwKWVTfwwZPy_pYnHE7b4GQECz3NjhgdIw",
-  "properties": {
-    "cid": "1:1e47895f-9025-49e1-971d-eb865c38d540"
-  }
-}
-```
-
-Once this json is read, use a tool like postman or curl to execute the following query, to read the
-data
+### 12. View results in the workbench logs
 
 ```bash
-curl --location --request GET 'http://localhost:29291/public/' --header 'Authorization: <auth code>'
+docker logs --tail 1000 -f $(docker ps -q --filter "name=ldio-workbench$")
 ```
-
-At the end, and to be sure that you correctly achieved the pull, you can check if the data you get
-is the same as the one you can get at https://jsonplaceholder.typicode.com/users
-
-
-Since we configured the `HttpData` with `proxyPath` and `proxyQueryParams`, we could also ask for a specific user with:
-
-```bash
-curl --location --request GET 'http://localhost:29291/public/paged?pageNumber=1' --header 'Authorization: <auth code>'
-```
-
-And the data returned will be the same as in https://jsonplaceholder.typicode.com/users/1
 
 # Test Teardown
 To stop all systems use:
