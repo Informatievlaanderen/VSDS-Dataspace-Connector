@@ -354,7 +354,22 @@ Sample output:
 }
 ```
 
-### 7. Negotiate a contract
+### 8. Start the workbench with the LdesClient
+
+```bash
+   docker compose up ldio-workbench -d
+```
+
+Wait for the workbench to start up properly logging "Started Application":
+```bash
+docker logs --tail 1000 -f $(docker ps -q --filter "name=ldio-workbench$")
+```
+
+By now you should see a new info log line stating that the pipeline is waiting for a token.
+The client will wait for a valid token before it starts consuming the LDES.
+To get a token, we need to negotiate a contract and start a transfer.
+
+### 8. Negotiate a contract
 
 In order to request any data, a contract gets negotiated, and an agreement is resulting has to be
 negotiated between providers and consumers.
@@ -410,21 +425,6 @@ Sample output:
   ...
 }
 ```
-
-### 8. Start the workbench with the LdesClient
-
-```bash
-   docker compose up ldio-workbench -d
-```
-
-Wait for the workbench to start up properly logging "Started Application":
-```bash
-docker logs --tail 1000 -f $(docker ps -q --filter "name=ldio-workbench$")
-```
-
-By now you should see a new info log line stating that the pipeline is waiting for a token.
-The client will wait for a valid token before it starts consuming the LDES.
-To get a token, we need to negotiate a contract and start a transfer.
 
 ### 9. Getting the contract agreement id
 
