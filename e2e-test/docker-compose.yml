@@ -63,6 +63,23 @@ services:
     profiles:
       - delay-started
 
+  # VSDS LDES Building Blocks
+
+  federated-catalog-connector:
+    container_name: federated-catalog-connector
+    image: vsds-federated-catalog-connector
+    environment:
+      - EDC_FS_CONFIG=federated-catalog/catalog-configuration.properties
+      - FCC_DIRECTORY_FILE=/federated-catalog/nodes-dc.json
+    depends_on: [ provider-connector ]
+    volumes:
+      - ./federated-catalog:/federated-catalog
+    ports:
+      - "8181:8181"
+      - "5005:5005"
+    profiles:
+      - connectors
+
   ldio-server-seeder:
     image: ghcr.io/informatievlaanderen/ldi-orchestrator:latest
     container_name: connector_ldio-server-seeder
@@ -112,8 +129,7 @@ services:
       - delay-started
 
   ldio-workbench:
-#    image: ghcr.io/informatievlaanderen/ldi-orchestrator:latest
-    image: conn-client:latest
+    image: ldes/ldi-orchestrator:1.10.0-SNAPSHOT
     container_name: connector_ldio-workbench
     environment:
       - SPRING_CONFIG_NAME=application

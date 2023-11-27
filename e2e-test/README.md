@@ -211,8 +211,7 @@ curl -d '{
              "contenttype": "application/n-quads",
              "header:Accept": "application/n-quads"
            }
-         }' -H 'content-type: application/json' http://localhost:19193/management/v2/assets \
-         -s | jq
+         }' -H 'content-type: application/json' http://localhost:19193/management/v2/assets -s | jq
 ```
 
 > It is important to note that the `baseUrl` property of the `dataAddress` is a fake data used for

@@ -2,8 +2,8 @@
 FROM openjdk:18-ea-bullseye AS build
 
 WORKDIR /app
-COPY ./ .
-RUN ./gradlew clean build
+COPY .. .
+RUN ./gradlew clean build -p ./http-pull-connector
 
 # Run the jar file
 FROM openjdk:18-ea-bullseye
