@@ -134,6 +134,24 @@ order.
 > drop it from the command. it's just used to format the output, and the same advice should be
 > applied to all calls that use `jq`.
 
+
+<placeholder>
+
+first pull from the Federated Catalog. It will be empty. It's crawling the catalog of all nodes defined in nodes-dc.json.
+
+````shell
+curl --location 'http://localhost:8181/api/federatedcatalog' \
+--header 'Content-Type: application/json' \
+--data '{"criteria":[]}'
+````
+Which will return an empty response:
+
+```json
+[]
+```
+</placeholder>
+
+
 ### 1. Register data plane instance for provider
 
 Before a consumer can start talking to a provider, it is necessary to register the data plane
@@ -352,6 +370,76 @@ Sample output:
   }
 }
 ```
+
+<placeholder>
+
+Additionally, the Federated Catalog will now also include this entry. (keeping in mind the polling interval)
+
+````shell
+curl --location 'http://localhost:8181/api/federatedcatalog' \
+--header 'Content-Type: application/json' \
+--data '{"criteria":[]}'
+````
+
+should output something like this
+
+````json
+[
+    {
+        "@id": "809d68a7-dd8e-498d-91cd-089bdbf43edb",
+        "@type": "dcat:Catalog",
+        "dcat:dataset": {
+            "@id": "devices",
+            "@type": "dcat:Dataset",
+            "odrl:hasPolicy": {
+                "@id": "MQ==:ZGV2aWNlcw==:MDkwMGRjOWUtZjU5Yy00M2JiLTkxODktNmVkODkzNmMyN2Rk",
+                "@type": "odrl:Set",
+                "odrl:permission": [],
+                "odrl:prohibition": [],
+                "odrl:obligation": [],
+                "odrl:target": "devices"
+            },
+            "dcat:distribution": [
+                {
+                    "@type": "dcat:Distribution",
+                    "dct:format": {
+                        "@id": "HttpProxy"
+                    },
+                    "dcat:accessService": "08479feb-66b1-4e21-954b-4eb73356ac80"
+                },
+                {
+                    "@type": "dcat:Distribution",
+                    "dct:format": {
+                        "@id": "HttpData"
+                    },
+                    "dcat:accessService": "08479feb-66b1-4e21-954b-4eb73356ac80"
+                }
+            ],
+            "edc:name": "device models",
+            "edc:id": "devices",
+            "edc:contenttype": "application/n-quads"
+        },
+        "dcat:service": {
+            "@id": "08479feb-66b1-4e21-954b-4eb73356ac80",
+            "@type": "dcat:DataService",
+            "dct:terms": "connector",
+            "dct:endpointUrl": "http://provider-connector:19194/protocol"
+        },
+        "edc:originator": "http://provider-connector:19194/protocol",
+        "edc:participantId": "provider",
+        "@context": {
+            "dct": "https://purl.org/dc/terms/",
+            "edc": "https://w3id.org/edc/v0.0.1/ns/",
+            "dcat": "https://www.w3.org/ns/dcat/",
+            "odrl": "http://www.w3.org/ns/odrl/2/",
+            "dspace": "https://w3id.org/dspace/v0.8/"
+        }
+    }
+]
+````
+
+
+</placeholder>
 
 ### 8. Start the workbench with the LdesClient
 

@@ -76,7 +76,8 @@ services:
       - ./federated-catalog:/federated-catalog
     ports:
       - "8181:8181"
-      - "5005:5005"
+    networks:
+      - ldes
     profiles:
       - connectors
 

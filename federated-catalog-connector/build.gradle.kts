@@ -21,10 +21,9 @@ plugins {
 dependencies {
     runtimeOnly(libs.edc.catalog.core)
     runtimeOnly(libs.edc.catalog.api)
-    runtimeOnly(libs.edc.catalog.spi)
+    implementation(libs.edc.catalog.spi)
 
-
-    runtimeOnly(libs.edc.util)
+    implementation(libs.edc.util)
     runtimeOnly(libs.edc.spi.jsonld)
 
     runtimeOnly(libs.bundles.edc.connector)
