@@ -6,12 +6,12 @@ To create the images run the following docker commands from the root directory:
 
 1. Image for consumer and provider connectors
     ```bash
-    docker build -t vsds-dataspace-connector . -f ./http-pull-connector/Dockerfile
+    docker build -t vsds-dataspace-connector:local . -f ./http-pull-connector/Dockerfile
     ```
 
 2. Image for the federated catalog connector
     ```bash
-    docker build -t vsds-federated-catalog-connector . -f ./federated-catalog-connector/Dockerfile
+    docker build -t vsds-federated-catalog-connector:local . -f ./federated-catalog-connector/Dockerfile
     ```
 
 > **Note**: These connectors are not production ready and should only be used for development purposes.
