@@ -4,6 +4,9 @@ services:
   provider-connector:
     container_name: connector_provider-connector
     image: vsds-dataspace-connector:local
+    build:
+      context: ..
+      dockerfile: http-pull-connector/Dockerfile
     environment:
       - EDC_KEYSTORE=certs/cert.pfx
       - EDC_KEYSTORE_PASSWORD=123456
@@ -27,6 +30,9 @@ services:
   consumer-connector:
     container_name: connector_consumer-connector
     image: vsds-dataspace-connector:local
+    build:
+      context: ..
+      dockerfile: http-pull-connector/Dockerfile
     environment:
       - EDC_KEYSTORE=certs/cert.pfx
       - EDC_KEYSTORE_PASSWORD=123456
@@ -42,6 +48,26 @@ services:
       - ./certs/cert.pfx:/app/certs/cert.pfx
       - ./http-pull-consumer/consumer-configuration.properties:/app/http-pull-consumer/consumer-configuration.properties
       - ./http-pull-consumer/consumer-vault.properties:/app/http-pull-consumer/consumer-vault.properties
+    networks:
+      - ldes
+    profiles:
+      - connectors
+
+  federated-catalog-connector:
+    container_name: federated-catalog-connector
+    image: vsds-federated-catalog-connector:local
+    build:
+      context: ..
+      dockerfile: federated-catalog-connector/Dockerfile
+    environment:
+      - EDC_FS_CONFIG=config/catalog-configuration.properties
+      - FCC_DIRECTORY_FILE=config/nodes-dc.json
+    depends_on: [ provider-connector ]
+    volumes:
+      - ./federated-catalog/catalog-configuration.properties:/app/config/catalog-configuration.properties
+      - ./federated-catalog/nodes-dc.json:/app/config/nodes-dc.json
+    ports:
+      - "8181:8181"
     networks:
       - ldes
     profiles:
@@ -112,8 +138,7 @@ services:
       - delay-started
 
   ldio-workbench:
-#    image: ghcr.io/informatievlaanderen/ldi-orchestrator:latest
-    image: conn-client:latest
+    image: ldes/ldi-orchestrator:1.10.0-SNAPSHOT
     container_name: connector_ldio-workbench
     environment:
       - SPRING_CONFIG_NAME=application

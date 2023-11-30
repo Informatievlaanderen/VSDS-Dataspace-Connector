@@ -109,13 +109,7 @@ This property is used to define the endpoint exposed by the control plane to val
 
 ## Run the connectors
 
-Before we can start the connectors, we are going to build the image:
-
-```bash
-docker build -t vsds-dataspace-connector:local ../.
-```
-
-After building the image, we can start the connectors with the following command:
+We can start the connectors with the following command:
 
 ```bash
 docker compose --profile connectors up -d
@@ -134,7 +128,53 @@ order.
 > drop it from the command. it's just used to format the output, and the same advice should be
 > applied to all calls that use `jq`.
 
-### 1. Register data plane instance for provider
+
+### 0. Federated catalog connector - State before datasets are provided by the provider connector
+
+When the federated catalog connector is started, it will crawl the connectors defined in [nodes-dc.json](federated-catalog/nodes-dc.json).
+In our test, this is done for the first time, 5 seconds after startup as defined by "edc.catalog.cache.execution.delay.seconds" in the [config](federated-catalog/catalog-configuration.properties).
+
+We can request the Federated Catalog with the following request:
+```bash
+curl 'http://localhost:8181/api/federatedcatalog' \
+    -H 'Content-Type: application/json' \
+    -d '{"criteria":[]}' \
+    -s | jq
+```
+
+If you do this before the provider connectors have been crawled, then you will get an empty response:
+```json
+[]
+```
+
+After the first crawl we get the following response, which contains the connector but no datasets yet:
+
+```json
+[
+  {
+    "@id": "b05dd09e-f1d4-4c6b-9174-3b532480eb7b",
+    "@type": "dcat:Catalog",
+    "dcat:dataset": [],
+    "dcat:service": {
+      "@id": "c3e3e29b-84c8-4322-af59-7a4c524e190e",
+      "@type": "dcat:DataService",
+      "dct:terms": "connector",
+      "dct:endpointUrl": "http://provider-connector:19194/protocol"
+    },
+    "edc:originator": "http://provider-connector:19194/protocol",
+    "edc:participantId": "provider",
+    "@context": {
+      "dct": "https://purl.org/dc/terms/",
+      "edc": "https://w3id.org/edc/v0.0.1/ns/",
+      "dcat": "https://www.w3.org/ns/dcat/",
+      "odrl": "http://www.w3.org/ns/odrl/2/",
+      "dspace": "https://w3id.org/dspace/v0.8/"
+    }
+  }
+]
+```
+
+### 1. Provider connector - Register data plane instance for provider
 
 Before a consumer can start talking to a provider, it is necessary to register the data plane
 instance of a connector. This is done by sending a POST request to the management API of the
@@ -161,7 +201,7 @@ curl -H 'Content-Type: application/json' \
      -X POST "http://localhost:19193/management/v2/dataplanes" | -s | jq
 ```
 
-### 2. Register data plane instance for consumer
+### 2. Consumer connector - Register data plane instance for consumer
 
 The same thing that is done for the provider must be done for the consumer
 
@@ -182,7 +222,7 @@ curl -H 'Content-Type: application/json' \
              -X POST "http://localhost:29193/management/v2/dataplanes"
 ```
 
-### 3. Create an Asset on the provider side
+### 3. Provider connector - Create an Asset on the provider side
 
 The provider connector needs to transfer a file to the location specified by the consumer connector
 when the data are requested. In order to offer any data, the provider must maintain an internal list
@@ -226,7 +266,7 @@ Additional properties on `HttpData` can be used to allow consumers to enrich the
 - `proxyBody`: allows attaching a body.
 - `proxyMethod`: allows specifying the Http Method (default `GET`)
 
-### 4. Create a Policy on the provider
+### 4. Provider connector - Create a Policy on the provider
 
 In order to manage the accessibility rules of an asset, it is essential to create a policy. However,
 to keep things simple, we will choose a policy that gives direct access to all the assets that are
@@ -250,7 +290,7 @@ curl -d '{
          -s | jq
 ```
 
-### 5. Create a contract definition on Provider
+### 5. Provider connector - Create a contract definition on Provider
 
 To ensure an exchange between providers and consumers, the supplier must create a contract offer for
 the good, on the basis of which a contract agreement can be negotiated. The contract definition
@@ -352,6 +392,73 @@ Sample output:
     "dspace": "https://w3id.org/dspace/v0.8/"
   }
 }
+```
+
+Additionally, the Federated Catalog will now also include this entry. 
+This may take a couple of seconds as the federated catalog connector only polls the provider every 5 seconds as defined by "edc.catalog.cache.execution.period.seconds" in the [config](federated-catalog/catalog-configuration.properties).
+
+```bash
+curl 'http://localhost:8181/api/federatedcatalog' \
+    -H 'Content-Type: application/json' \
+    -d '{"criteria":[]}' \
+    -s | jq
+```
+
+should output something like this
+
+```json
+[
+  {
+    "@id": "960d2187-c845-4e1c-9f5e-8beebc83171f",
+    "@type": "dcat:Catalog",
+    "dcat:dataset": {
+      "@id": "devices",
+      "@type": "dcat:Dataset",
+      "odrl:hasPolicy": {
+        "@id": "MQ==:ZGV2aWNlcw==:MWFiNGIwMzYtM2Y1Ni00ZmIwLWJlNzMtYjg5YzM4MTNkMDYz",
+        "@type": "odrl:Set",
+        "odrl:permission": [],
+        "odrl:prohibition": [],
+        "odrl:obligation": [],
+        "odrl:target": "devices"
+      },
+      "dcat:distribution": [
+        {
+          "@type": "dcat:Distribution",
+          "dct:format": {
+            "@id": "HttpProxy"
+          },
+          "dcat:accessService": "c3e3e29b-84c8-4322-af59-7a4c524e190e"
+        },
+        {
+          "@type": "dcat:Distribution",
+          "dct:format": {
+            "@id": "HttpData"
+          },
+          "dcat:accessService": "c3e3e29b-84c8-4322-af59-7a4c524e190e"
+        }
+      ],
+      "edc:name": "device models",
+      "edc:id": "devices",
+      "edc:contenttype": "application/n-quads"
+    },
+    "dcat:service": {
+      "@id": "c3e3e29b-84c8-4322-af59-7a4c524e190e",
+      "@type": "dcat:DataService",
+      "dct:terms": "connector",
+      "dct:endpointUrl": "http://provider-connector:19194/protocol"
+    },
+    "edc:originator": "http://provider-connector:19194/protocol",
+    "edc:participantId": "provider",
+    "@context": {
+      "dct": "https://purl.org/dc/terms/",
+      "edc": "https://w3id.org/edc/v0.0.1/ns/",
+      "dcat": "https://www.w3.org/ns/dcat/",
+      "odrl": "http://www.w3.org/ns/odrl/2/",
+      "dspace": "https://w3id.org/dspace/v0.8/"
+    }
+  }
+]
 ```
 
 ### 8. Start the workbench with the LdesClient
