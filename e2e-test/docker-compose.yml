@@ -47,6 +47,23 @@ services:
     profiles:
       - connectors
 
+  federated-catalog-connector:
+    container_name: federated-catalog-connector
+    image: vsds-federated-catalog-connector
+    environment:
+      - EDC_FS_CONFIG=config/catalog-configuration.properties
+      - FCC_DIRECTORY_FILE=config/nodes-dc.json
+    depends_on: [ provider-connector ]
+    volumes:
+      - ./federated-catalog/catalog-configuration.properties:/app/config/catalog-configuration.properties
+      - ./federated-catalog/nodes-dc.json:/app/config/nodes-dc.json
+    ports:
+      - "8181:8181"
+    networks:
+      - ldes
+    profiles:
+      - connectors
+
   test-message-generator:
     container_name: connector_test-message-generator
     image: ghcr.io/informatievlaanderen/test-message-generator:latest
@@ -62,24 +79,6 @@ services:
       - ldes
     profiles:
       - delay-started
-
-  # VSDS LDES Building Blocks
-
-  federated-catalog-connector:
-    container_name: federated-catalog-connector
-    image: vsds-federated-catalog-connector
-    environment:
-      - EDC_FS_CONFIG=federated-catalog/catalog-configuration.properties
-      - FCC_DIRECTORY_FILE=/federated-catalog/nodes-dc.json
-    depends_on: [ provider-connector ]
-    volumes:
-      - ./federated-catalog:/federated-catalog
-    ports:
-      - "8181:8181"
-    networks:
-      - ldes
-    profiles:
-      - connectors
 
   ldio-server-seeder:
     image: ghcr.io/informatievlaanderen/ldi-orchestrator:latest

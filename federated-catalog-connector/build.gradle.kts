@@ -22,6 +22,7 @@ dependencies {
     runtimeOnly(libs.edc.catalog.core)
     runtimeOnly(libs.edc.catalog.api)
     implementation(libs.edc.catalog.spi)
+    implementation(libs.edc.configuration.filesystem)
 
     implementation(libs.edc.util)
     runtimeOnly(libs.edc.spi.jsonld)

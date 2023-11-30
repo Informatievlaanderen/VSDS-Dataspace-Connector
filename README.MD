@@ -5,7 +5,7 @@ This repository provides a connector build that can be used to create a dataspac
 To create the image run the following docker command from the root directory:
 
 ```bash
-docker build -t vsds-dataspace-connector . -f ./federated-catalog-connector/Dockerfile
+#docker build -t vsds-dataspace-connector . -f ./http-pull-connector/Dockerfile
 docker build -t vsds-federated-catalog-connector . -f ./federated-catalog-connector/Dockerfile
 ```
 

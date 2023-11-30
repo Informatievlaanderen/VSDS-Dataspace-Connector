@@ -137,13 +137,16 @@ order.
 
 <placeholder>
 
+TODO POLLING INTERVAL???
+
 first pull from the Federated Catalog. It will be empty. It's crawling the catalog of all nodes defined in nodes-dc.json.
 
-````shell
-curl --location 'http://localhost:8181/api/federatedcatalog' \
---header 'Content-Type: application/json' \
---data '{"criteria":[]}'
-````
+```bash
+curl 'http://localhost:8181/api/federatedcatalog' \
+    -H 'Content-Type: application/json' \
+    -d '{"criteria":[]}' \
+    -s | jq
+```
 Which will return an empty response:
 
 ```json
@@ -229,7 +232,8 @@ curl -d '{
              "contenttype": "application/n-quads",
              "header:Accept": "application/n-quads"
            }
-         }' -H 'content-type: application/json' http://localhost:19193/management/v2/assets -s | jq
+         }' -H 'content-type: application/json' http://localhost:19193/management/v2/assets \
+         -s | jq
 ```
 
 > It is important to note that the `baseUrl` property of the `dataAddress` is a fake data used for
@@ -375,11 +379,12 @@ Sample output:
 
 Additionally, the Federated Catalog will now also include this entry. (keeping in mind the polling interval)
 
-````shell
-curl --location 'http://localhost:8181/api/federatedcatalog' \
---header 'Content-Type: application/json' \
---data '{"criteria":[]}'
-````
+```bash
+curl 'http://localhost:8181/api/federatedcatalog' \
+    -H 'Content-Type: application/json' \
+    -d '{"criteria":[]}' \
+    -s | jq
+```
 
 should output something like this
 
