@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 
 include("http-pull-connector")
 include("federated-catalog-connector")
+//include("extended-public-api-connector")

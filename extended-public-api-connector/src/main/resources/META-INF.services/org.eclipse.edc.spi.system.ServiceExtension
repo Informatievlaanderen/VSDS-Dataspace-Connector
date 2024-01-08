@@ -1,0 +1,2 @@
+org.eclipse.edc.connector.api.org.eclipse.edc.connector.dataplane.ExtendedDataPlanePublicApiExtension
+org.eclipse.edc.connector.dataplane.http.ExtendedHttpDataPlaneExtension

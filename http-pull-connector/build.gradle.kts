@@ -12,6 +12,13 @@ repositories {
 
 dependencies {
 
+    implementation(libs.edc.data.plane.util)
+    implementation(libs.edc.util)
+
+//    implementation("org.eclipse.edc:control-plane-api-client:0.4.1")
+//    implementation("org.eclipse.edc:data-plane-http-spi:0.4.1")
+//    implementation(libs.edc.catalog.spi)
+
     implementation(libs.edc.control.plane.core)
     implementation(libs.edc.dsp)
     implementation(libs.edc.configuration.filesystem)
@@ -29,6 +36,8 @@ dependencies {
     implementation(libs.edc.data.plane.api)
     implementation(libs.edc.data.plane.core)
     implementation(libs.edc.data.plane.http)
+
+
 
 }
 
