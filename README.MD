@@ -17,7 +17,7 @@ To create the images run the following docker commands from the root directory:
    > **Note**: These connectors are not production ready and should only be used for development purposes.
 
 3. E2E testing
-   - [Basic flow](https://github.com/Informatievlaanderen/VSDS-LDES-E2E-testing/tree/feat/add-connectors-e2e/tests/034.dataspace-connector-consumer-and-provider)
+   - [Basic flow](https://github.com/Informatievlaanderen/VSDS-LDES-E2E-testing/tree/main/tests/034.dataspace-connector-consumer-and-provider)
 
 ## Next steps:
 
