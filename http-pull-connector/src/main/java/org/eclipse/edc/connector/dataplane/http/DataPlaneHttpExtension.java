@@ -46,7 +46,6 @@ public class DataPlaneHttpExtension implements ServiceExtension {
 
     @Override
     public void initialize(ServiceExtensionContext context) {
-        System.out.println("http");
         var monitor = context.getMonitor();
         var sinkPartitionSize = context.getSetting(EDC_DATAPLANE_HTTP_SINK_PARTITION_SIZE, DEFAULT_PART_SIZE);
 

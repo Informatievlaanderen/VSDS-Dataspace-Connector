@@ -1,19 +1,3 @@
-/*
- *  Copyright (c) 2022 Amadeus
- *
- *  This program and the accompanying materials are made available under the
- *  terms of the Apache License, Version 2.0 which is available at
- *  https://www.apache.org/licenses/LICENSE-2.0
- *
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Contributors:
- *       Amadeus - initial API and implementation
- *       Bayerische Motoren Werke Aktiengesellschaft (BMW AG) - improvements
- *       Mercedes-Benz Tech Innovation GmbH - publish public api context into dedicated swagger hub page
- *
- */
-
 package org.eclipse.edc.connector.dataplane.api.controller;
 
 import jakarta.ws.rs.*;
@@ -124,15 +108,11 @@ public class ExtendedDataPlanePublicApiController {
                 .whenComplete((result, throwable) -> {
                     if (throwable == null) {
                         if (result.succeeded()) {
-                            System.out.println(result.getContent());
                             response.resume(result.getContent());
                         } else {
-//                            System.out.println(result.getContent());
-//                            System.out.println(result.getFailureMessages());
                             response.resume(internalServerError(result.getFailureMessages()));
                         }
                     } else {
-//                        System.out.println(throwable.getMessage());
                         response.resume(internalServerError("Unhandled exception occurred during data transfer: " + throwable.getMessage()));
                     }
                 });
@@ -150,8 +130,7 @@ public class ExtendedDataPlanePublicApiController {
         if (result.failed()) {
             throw new NotAuthorizedException(String.join(", ", result.getFailureMessages()));
         }
-        DataAddress address = result.getContent();
-        return address;
+        return result.getContent();
     }
 
     private Response badRequest(String error) {

@@ -1,17 +1,3 @@
-/*
- *  Copyright (c) 2022 Amadeus
- *
- *  This program and the accompanying materials are made available under the
- *  terms of the Apache License, Version 2.0 which is available at
- *  https://www.apache.org/licenses/LICENSE-2.0
- *
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Contributors:
- *       Amadeus - Initial implementation
- *
- */
-
 package org.eclipse.edc.connector.dataplane.api.pipeline;
 
 import jakarta.ws.rs.core.HttpHeaders;
@@ -21,10 +7,9 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class HttpPart implements DataSource.Part {
-    private static final List<String> excludedHeaders = List.of(HttpHeaders.AUTHORIZATION, HttpHeaders.CONTENT_TYPE, HttpHeaders.ACCEPT);
+    public static final List<String> excludedHeaders = List.of(HttpHeaders.AUTHORIZATION, HttpHeaders.CONTENT_TYPE, HttpHeaders.ACCEPT);
     private final String name;
     private final Map<String, List<String>> headers;
     private final int statusCode;

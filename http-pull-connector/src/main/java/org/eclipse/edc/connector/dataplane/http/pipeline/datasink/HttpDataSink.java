@@ -1,18 +1,3 @@
-/*
- *  Copyright (c) 2021 Microsoft Corporation
- *
- *  This program and the accompanying materials are made available under the
- *  terms of the Apache License, Version 2.0 which is available at
- *  https://www.apache.org/licenses/LICENSE-2.0
- *
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Contributors:
- *       Microsoft Corporation - initial API and implementation
- *       Siemens AG - added additionalHeaders
- *
- */
-
 package org.eclipse.edc.connector.dataplane.http.pipeline.datasink;
 
 import org.eclipse.edc.connector.dataplane.api.pipeline.HttpPart;
@@ -27,7 +12,6 @@ import org.eclipse.edc.spi.http.EdcHttpClient;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;

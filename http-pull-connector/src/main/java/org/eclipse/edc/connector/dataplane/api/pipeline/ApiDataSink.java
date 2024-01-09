@@ -1,17 +1,3 @@
-/*
- *  Copyright (c) 2021 Microsoft Corporation
- *
- *  This program and the accompanying materials are made available under the
- *  terms of the Apache License, Version 2.0 which is available at
- *  https://www.apache.org/licenses/LICENSE-2.0
- *
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Contributors:
- *       Microsoft Corporation - initial API and implementation
- *
- */
-
 package org.eclipse.edc.connector.dataplane.api.pipeline;
 
 import jakarta.ws.rs.core.Response;
@@ -68,7 +54,7 @@ public class ApiDataSink implements DataSink {
                         if (results.stream().anyMatch(AbstractResult::failed)) {
                             return error("Error transferring data");
                         }
-                        Response.ResponseBuilder responseBuilder = isOk() ? Response.ok(stream) : Response.status(status, getContent());
+                        Response.ResponseBuilder responseBuilder = isOk() ? Response.ok(stream.toString()) : Response.status(status, getContent());
                         headers.forEach(responseBuilder::header);
 
                         return StreamResult.success(responseBuilder.build());

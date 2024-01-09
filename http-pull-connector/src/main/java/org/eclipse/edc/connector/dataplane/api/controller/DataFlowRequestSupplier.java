@@ -1,20 +1,5 @@
-/*
- *  Copyright (c) 2022 Amadeus
- *
- *  This program and the accompanying materials are made available under the
- *  terms of the Apache License, Version 2.0 which is available at
- *  https://www.apache.org/licenses/LICENSE-2.0
- *
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Contributors:
- *       Amadeus - initial API and implementation
- *
- */
-
 package org.eclipse.edc.connector.dataplane.api.controller;
 
-import org.eclipse.edc.connector.dataplane.api.controller.ContainerRequestContextApi;
 import org.eclipse.edc.connector.dataplane.api.pipeline.ApiDataSinkFactory;
 import org.eclipse.edc.spi.types.domain.DataAddress;
 import org.eclipse.edc.spi.types.domain.transfer.DataFlowRequest;
@@ -25,6 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiFunction;
 
+import static org.eclipse.edc.connector.dataplane.api.pipeline.HttpPart.excludedHeaders;
 import static org.eclipse.edc.connector.dataplane.spi.schema.DataFlowRequestSchema.*;
 
 public class DataFlowRequestSupplier implements BiFunction<org.eclipse.edc.connector.dataplane.api.controller.ContainerRequestContextApi, DataAddress, DataFlowRequest> {
@@ -73,7 +59,7 @@ public class DataFlowRequestSupplier implements BiFunction<org.eclipse.edc.conne
     }
 
     private static boolean isAdditionalHeader(String key) {
-        return !key.equalsIgnoreCase("content-type");
+        return !excludedHeaders.contains(key);
 
     }
 }
