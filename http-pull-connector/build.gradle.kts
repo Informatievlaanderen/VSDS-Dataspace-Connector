@@ -38,8 +38,6 @@ dependencies {
 //    implementation(libs.edc.data.plane.api)
 //    implementation(libs.edc.data.plane.http)
 
-
-
 }
 
 application {
