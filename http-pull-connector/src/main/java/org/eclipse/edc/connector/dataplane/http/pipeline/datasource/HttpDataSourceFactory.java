@@ -31,15 +31,15 @@ import static org.eclipse.edc.dataaddress.httpdata.spi.HttpDataAddressSchema.HTT
 
 
 /**
- * Instantiates {@link ExtendedHttpDataSourceFactory}s for requests whose source data type is {@link HttpDataAddressSchema#HTTP_DATA_TYPE}.
+ * Instantiates {@link HttpDataSourceFactory}s for requests whose source data type is {@link HttpDataAddressSchema#HTTP_DATA_TYPE}.
  */
-public class ExtendedHttpDataSourceFactory implements DataSourceFactory {
+public class HttpDataSourceFactory implements DataSourceFactory {
     private final EdcHttpClient httpClient;
     private final HttpRequestParamsProvider requestParamsProvider;
     private final Monitor monitor;
     private final HttpRequestFactory requestFactory;
 
-    public ExtendedHttpDataSourceFactory(EdcHttpClient httpClient, HttpRequestParamsProvider requestParamsProvider, Monitor monitor, HttpRequestFactory requestFactory) {
+    public HttpDataSourceFactory(EdcHttpClient httpClient, HttpRequestParamsProvider requestParamsProvider, Monitor monitor, HttpRequestFactory requestFactory) {
         this.httpClient = httpClient;
         this.requestParamsProvider = requestParamsProvider;
         this.monitor = monitor;
@@ -66,7 +66,7 @@ public class ExtendedHttpDataSourceFactory implements DataSourceFactory {
         var dataAddress = HttpDataAddress.Builder.newInstance()
                 .copyFrom(request.getSourceDataAddress())
                 .build();
-        return ExtendedHttpDataSource.Builder.newInstance()
+        return HttpDataSource.Builder.newInstance()
                 .httpClient(httpClient)
                 .monitor(monitor)
                 .requestId(request.getId())

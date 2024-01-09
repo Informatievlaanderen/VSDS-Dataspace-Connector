@@ -111,10 +111,6 @@ public class ExtendedDataPlanePublicApiController {
         var dataAddress = extractSourceDataAddress(token);
         var dataFlowRequest = requestSupplier.apply(contextApi, dataAddress);
 
-        System.out.println(dataFlowRequest.getSourceDataAddress().getType());
-        System.out.println(dataFlowRequest.getDestinationDataAddress().getType());
-        System.out.println(dataFlowRequest.getProperties());
-        System.out.println(pipelineService.canHandle(dataFlowRequest));
         var validationResult = pipelineService.validate(dataFlowRequest);
         if (validationResult.failed()) {
             var errorMsg = validationResult.getFailureMessages().isEmpty() ?
@@ -123,7 +119,6 @@ public class ExtendedDataPlanePublicApiController {
             response.resume(badRequest(errorMsg));
             return;
         }
-        System.out.println(validationResult.failed());
 
         pipelineService.transfer(dataFlowRequest)
                 .whenComplete((result, throwable) -> {
@@ -132,12 +127,12 @@ public class ExtendedDataPlanePublicApiController {
                             System.out.println(result.getContent());
                             response.resume(result.getContent());
                         } else {
-                            System.out.println(result.getContent());
-                            System.out.println(result.getFailureMessages());
+//                            System.out.println(result.getContent());
+//                            System.out.println(result.getFailureMessages());
                             response.resume(internalServerError(result.getFailureMessages()));
                         }
                     } else {
-                        System.out.println(throwable.getMessage());
+//                        System.out.println(throwable.getMessage());
                         response.resume(internalServerError("Unhandled exception occurred during data transfer: " + throwable.getMessage()));
                     }
                 });

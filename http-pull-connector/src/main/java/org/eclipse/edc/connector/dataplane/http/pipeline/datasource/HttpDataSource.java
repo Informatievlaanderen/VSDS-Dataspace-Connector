@@ -30,7 +30,7 @@ import java.util.stream.Stream;
 
 import static java.lang.String.format;
 
-public class ExtendedHttpDataSource implements DataSource {
+public class HttpDataSource implements DataSource {
 
     private String name;
     private HttpRequestParams params;
@@ -58,7 +58,7 @@ public class ExtendedHttpDataSource implements DataSource {
 
     }
 
-    private ExtendedHttpDataSource() {
+    private HttpDataSource() {
     }
 
     @Override
@@ -67,14 +67,14 @@ public class ExtendedHttpDataSource implements DataSource {
     }
 
     public static class Builder {
-        private final ExtendedHttpDataSource dataSource;
+        private final HttpDataSource dataSource;
 
         public static Builder newInstance() {
             return new Builder();
         }
 
         private Builder() {
-            dataSource = new ExtendedHttpDataSource();
+            dataSource = new HttpDataSource();
         }
 
         public Builder params(HttpRequestParams params) {
@@ -107,7 +107,7 @@ public class ExtendedHttpDataSource implements DataSource {
             return this;
         }
 
-        public ExtendedHttpDataSource build() {
+        public HttpDataSource build() {
             Objects.requireNonNull(dataSource.requestId, "requestId");
             Objects.requireNonNull(dataSource.httpClient, "httpClient");
             Objects.requireNonNull(dataSource.monitor, "monitor");

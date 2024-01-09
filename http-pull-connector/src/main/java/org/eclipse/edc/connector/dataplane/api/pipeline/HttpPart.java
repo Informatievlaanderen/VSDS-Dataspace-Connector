@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public class HttpPart implements DataSource.Part {
+    private static final List<String> excludedHeaders = List.of(HttpHeaders.AUTHORIZATION, HttpHeaders.CONTENT_TYPE, HttpHeaders.ACCEPT);
     private final String name;
     private final Map<String, List<String>> headers;
     private final int statusCode;
@@ -74,6 +75,6 @@ public class HttpPart implements DataSource.Part {
     }
 
     private boolean isRequestHeader(String key) {
-        return !Objects.equals(key, HttpHeaders.AUTHORIZATION);
+        return !excludedHeaders.contains(key);
     }
 }

@@ -16,9 +16,12 @@
 package org.eclipse.edc.connector.dataplane.api;
 
 import org.eclipse.edc.connector.dataplane.api.controller.ExtendedDataPlanePublicApiController;
+import org.eclipse.edc.connector.dataplane.api.pipeline.ApiDataSinkFactory;
 import org.eclipse.edc.connector.dataplane.api.validation.ConsumerPullTransferDataAddressResolver;
 import org.eclipse.edc.connector.dataplane.http.params.HttpRequestParamsProviderImpl;
+import org.eclipse.edc.connector.dataplane.http.pipeline.datasink.HttpDataSinkFactory;
 import org.eclipse.edc.connector.dataplane.http.spi.HttpRequestParamsProvider;
+import org.eclipse.edc.connector.dataplane.spi.pipeline.DataTransferExecutorServiceContainer;
 import org.eclipse.edc.connector.dataplane.spi.pipeline.PipelineService;
 import org.eclipse.edc.runtime.metamodel.annotation.Extension;
 import org.eclipse.edc.runtime.metamodel.annotation.Inject;
@@ -77,6 +80,9 @@ public class DataPlanePublicApiExtension implements ServiceExtension {
     @Inject
     private Vault vault;
 
+    @Inject
+    private DataTransferExecutorServiceContainer executorContainer;
+
     @Override
     public String name() {
         return NAME;
@@ -84,26 +90,15 @@ public class DataPlanePublicApiExtension implements ServiceExtension {
 
     @Override
     public void initialize(ServiceExtensionContext context) {
-        var monitor = context.getMonitor();
-        monitor.debug("api extended");
-        monitor.debug("api extended");
-        monitor.debug("api extended");
-        monitor.debug("api extended");
-        monitor.debug("api extended");
         var validationEndpoint = context.getConfig().getString(CONTROL_PLANE_VALIDATION_ENDPOINT);
         var dataAddressResolver = new ConsumerPullTransferDataAddressResolver(httpClient, validationEndpoint, typeManager.getMapper());
         var configuration = webServiceConfigurer.configure(context, webServer, PUBLIC_SETTINGS);
 
-//        var monitor = context.getMonitor();
+//        var paramsProvider = new HttpRequestParamsProviderImpl(vault, typeManager);
+//        context.registerService(HttpRequestParamsProvider.class, paramsProvider);
 
-        System.out.println("api");
-        var paramsProvider = new HttpRequestParamsProviderImpl(vault, typeManager);
-        context.registerService(HttpRequestParamsProvider.class, paramsProvider);
-
-//        var httpRequestFactory = new HttpRequestFactory();
-
-//        var sourceFactory = new ExtendedHttpDataSourceFactory(httpClient, paramsProvider, monitor, httpRequestFactory);
-//        pipelineService.registerFactory(sourceFactory);
+        var sinkFactory = new ApiDataSinkFactory(context.getMonitor(), executorContainer.getExecutorService());
+        pipelineService.registerFactory(sinkFactory);
 
         var publicApiController = new ExtendedDataPlanePublicApiController(pipelineService, dataAddressResolver);
         webService.registerResource(configuration.getContextAlias(), publicApiController);

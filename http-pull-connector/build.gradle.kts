@@ -14,9 +14,10 @@ dependencies {
 
     implementation(libs.edc.data.plane.util)
     implementation(libs.edc.util)
+    implementation(libs.edc.jersey.core)
 
-//    implementation("org.eclipse.edc:control-plane-api-client:0.4.1")
-//    implementation("org.eclipse.edc:data-plane-http-spi:0.4.1")
+    implementation("org.eclipse.edc:control-plane-api-client:0.4.1")
+    implementation("org.eclipse.edc:data-plane-http-spi:0.4.1")
 //    implementation(libs.edc.catalog.spi)
 
     implementation(libs.edc.control.plane.core)
@@ -33,9 +34,11 @@ dependencies {
     implementation(libs.edc.data.plane.selector.core)
     implementation(libs.edc.data.plane.selector.client)
 
-    implementation(libs.edc.data.plane.api)
+//    implementation(project(":org/eclipse/edc/connector/dataplane/http/DataPlaneHttpExtension.java"))
+
+//    implementation(libs.edc.data.plane.api)
     implementation(libs.edc.data.plane.core)
-    implementation(libs.edc.data.plane.http)
+//    implementation(libs.edc.data.plane.http)
 
 
 

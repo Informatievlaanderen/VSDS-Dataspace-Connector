@@ -3,7 +3,7 @@ package org.eclipse.edc.connector.dataplane.http;
 import org.eclipse.edc.connector.dataplane.http.params.HttpRequestFactory;
 import org.eclipse.edc.connector.dataplane.http.params.HttpRequestParamsProviderImpl;
 import org.eclipse.edc.connector.dataplane.http.pipeline.datasink.HttpDataSinkFactory;
-import org.eclipse.edc.connector.dataplane.http.pipeline.datasource.ExtendedHttpDataSourceFactory;
+import org.eclipse.edc.connector.dataplane.http.pipeline.datasource.HttpDataSourceFactory;
 import org.eclipse.edc.connector.dataplane.http.spi.HttpRequestParamsProvider;
 import org.eclipse.edc.connector.dataplane.spi.pipeline.DataTransferExecutorServiceContainer;
 import org.eclipse.edc.connector.dataplane.spi.pipeline.PipelineService;
@@ -48,11 +48,6 @@ public class DataPlaneHttpExtension implements ServiceExtension {
     public void initialize(ServiceExtensionContext context) {
         System.out.println("http");
         var monitor = context.getMonitor();
-        monitor.debug("http extended");
-        monitor.debug("http extended");
-        monitor.debug("http extended");
-        monitor.debug("http extended");
-        monitor.debug("http extended");
         var sinkPartitionSize = context.getSetting(EDC_DATAPLANE_HTTP_SINK_PARTITION_SIZE, DEFAULT_PART_SIZE);
 
         var paramsProvider = new HttpRequestParamsProviderImpl(vault, typeManager);
@@ -60,7 +55,7 @@ public class DataPlaneHttpExtension implements ServiceExtension {
 
         var httpRequestFactory = new HttpRequestFactory();
 
-        var sourceFactory = new ExtendedHttpDataSourceFactory(httpClient, paramsProvider, monitor, httpRequestFactory);
+        var sourceFactory = new HttpDataSourceFactory(httpClient, paramsProvider, monitor, httpRequestFactory);
         pipelineService.registerFactory(sourceFactory);
 
         var sinkFactory = new HttpDataSinkFactory(httpClient, executorContainer.getExecutorService(), sinkPartitionSize, monitor, paramsProvider, httpRequestFactory);
