@@ -12,6 +12,10 @@ repositories {
 
 dependencies {
 
+    implementation(libs.edc.data.plane.util)
+    implementation(libs.edc.util)
+    implementation(libs.edc.jersey.core)
+
     implementation(libs.edc.control.plane.core)
     implementation(libs.edc.dsp)
     implementation(libs.edc.configuration.filesystem)
@@ -22,13 +26,17 @@ dependencies {
 //    implementation(libs.edc.transfer.pull.http.receiver)
     implementation(libs.edc.transfer.pull.http.dynamic.receiver)
 
+    implementation(libs.edc.control.plane.api.client)
+    implementation(libs.edc.data.plane.http.spi)
+
     implementation(libs.edc.data.plane.selector.api)
     implementation(libs.edc.data.plane.selector.core)
     implementation(libs.edc.data.plane.selector.client)
 
-    implementation(libs.edc.data.plane.api)
     implementation(libs.edc.data.plane.core)
-    implementation(libs.edc.data.plane.http)
+//    must not be added so our implementation is used by the dataplane
+//    implementation(libs.edc.data.plane.api)
+//    implementation(libs.edc.data.plane.http)
 
 }
 
