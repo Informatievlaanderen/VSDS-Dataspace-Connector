@@ -43,6 +43,9 @@ edc-data-plane-selector-core = { module = "org.eclipse.edc:data-plane-selector-c
 edc-data-plane-spi = { module = "org.eclipse.edc:data-plane-spi", version.ref = "edc" }
 edc-data-plane-util = { module = "org.eclipse.edc:data-plane-util", version.ref = "edc" }
 edc-dsp = { module = "org.eclipse.edc:dsp", version.ref = "edc" }
+edc-ext-identity-did-core = { module = "org.eclipse.edc:identity-did-core", version.ref = "edc" }
+edc-ext-identity-did-service = { module = "org.eclipse.edc:identity-did-service", version.ref = "edc" }
+edc-ext-identity-did-web = { module = "org.eclipse.edc:identity-did-web", version.ref = "edc" }
 edc-http = { module = "org.eclipse.edc:http", version.ref = "edc" }
 edc-iam-mock = { module = "org.eclipse.edc:iam-mock", version.ref = "edc" }
 edc-jersey-core = { module = "org.eclipse.edc:jersey-core", version.ref = "edc" }
@@ -65,6 +68,10 @@ edc-transfer-spi = { module = "org.eclipse.edc:transfer-spi", version.ref = "edc
 edc-util = { module = "org.eclipse.edc:util", version.ref = "edc" }
 edc-vault-azure = { module = "org.eclipse.edc:vault-azure", version.ref = "edc" }
 edc-vault-filesystem = { module = "org.eclipse.edc:vault-filesystem", version.ref = "edc" }
+ih-core-verifier = { module = "org.eclipse.edc:identity-hub-credentials-verifier", version.ref = "edc" }
+ih-ext-api = { module = "org.eclipse.edc:identity-hub-api", version.ref = "edc" }
+ih-ext-credentials-jwt = { module = "org.eclipse.edc:identity-hub-credentials-jwt", version.ref = "edc" }
+ih-ext-verifier-jwt = { module = "org.eclipse.edc:identity-hub-verifier-jwt", version.ref = "edc" }
 jakarta-rsApi = { module = "jakarta.ws.rs:jakarta.ws.rs-api", version.ref = "rsApi" }
 jakartaJson = { module = "org.glassfish:jakarta.json", version.ref = "jakarta-json" }
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "jupiter" }
@@ -74,9 +81,13 @@ junit-pioneer = { module = "org.junit-pioneer:junit-pioneer", version.ref = "jun
 okhttp-mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "okhttp-mockwebserver" }
 opentelemetry-annotations = { module = "io.opentelemetry:opentelemetry-extension-annotations", version.ref = "openTelemetry" }
 restAssured = { module = "io.rest-assured:rest-assured", version.ref = "restAssured" }
+rs-core = { module = "org.eclipse.edc:registration-service", version.ref = "edc" }
+rs-core-credential-service = { module = "org.eclipse.edc:registration-service-credential-service", version.ref = "edc" }
+rs-ext-api = { module = "org.eclipse.edc:registration-service-api", version.ref = "edc" }
 
 [bundles]
 edc-connector = ["edc-boot", "edc-connector-core", "edc-jersey-core", "edc-api-observability"]
+identity = ["edc-ext-identity-did-core", "edc-ext-identity-did-service", "edc-ext-identity-did-web"]
 
 [plugins]
 shadow = { id = "com.github.johnrengelman.shadow", version = "8.1.1" }

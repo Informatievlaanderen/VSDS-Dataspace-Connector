@@ -30,7 +30,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.REGISTRY }}/Informatievlaanderen/vsds-dataspace-connector/federated-catalog
+          images: ${{ env.REGISTRY }}/Informatievlaanderen/vsds-dataspace-connector/federated-authority
           tags: |
             type=raw,value={{date 'YYYYMMDDHHmmss'}}
             type=raw,value=latest
@@ -39,6 +39,6 @@ jobs:
         with:
           context: .
           push: true
-          file: ./federated-catalog-connector/Dockerfile
+          file: ./federated-authority-connector/Dockerfile
           tags: ${{ steps.meta.outputs.tags }}
           platforms: linux/amd64,linux/arm64
