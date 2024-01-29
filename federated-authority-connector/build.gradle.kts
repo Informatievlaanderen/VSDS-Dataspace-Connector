@@ -22,7 +22,10 @@ dependencies {
     runtimeOnly(libs.edc.catalog.core)
     runtimeOnly(libs.edc.catalog.api)
     implementation(libs.edc.catalog.spi)
+
+    // Filesystem config
     implementation(libs.edc.configuration.filesystem)
+    implementation(libs.edc.vault.filesystem)
 
     implementation(libs.edc.util)
     runtimeOnly(libs.edc.spi.jsonld)
@@ -33,7 +36,18 @@ dependencies {
 
     // IDS stuff
     runtimeOnly(libs.edc.dsp)
-    runtimeOnly(libs.edc.iam.mock)
+
+    // Identity Hub
+    runtimeOnly(libs.bundles.identity)
+    runtimeOnly(libs.ih.core.verifier)
+    runtimeOnly(libs.ih.ext.api)
+    runtimeOnly(libs.ih.ext.credentials.jwt)
+    runtimeOnly(libs.ih.ext.verifier.jwt)
+
+    // Registration service
+    runtimeOnly(libs.rs.core)
+    runtimeOnly(libs.rs.core.credential.service)
+    runtimeOnly(libs.rs.ext.api)
 }
 
 application {
@@ -45,6 +59,6 @@ var distZip = tasks.getByName("distZip")
 
 tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
     mergeServiceFiles()
-    archiveFileName.set("federated-catalog-connector.jar")
+    archiveFileName.set("federated-authority-connector.jar")
     dependsOn(distTar, distZip)
 }

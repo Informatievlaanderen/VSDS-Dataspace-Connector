@@ -9,9 +9,9 @@ To create the images run the following docker commands from the root directory:
     docker build -t vsds-dataspace-connector:local . -f ./http-pull-connector/Dockerfile
     ```
 
-2. Image for the federated catalog connector
+2. Image for the federated authority connector
     ```bash
-    docker build -t vsds-federated-catalog-connector:local . -f ./federated-catalog-connector/Dockerfile
+    docker build -t vsds-federated-authority-connector:local . -f ./federated-authority-connector/Dockerfile
     ```
 
    > **Note**: These connectors are not production ready and should only be used for development purposes.

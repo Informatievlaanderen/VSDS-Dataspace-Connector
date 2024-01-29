@@ -19,16 +19,8 @@ dependencies {
     implementation(libs.edc.configuration.filesystem)
     implementation(libs.edc.vault.filesystem)
 
-
-//    implementation(libs.edc.iam.mock)
-
     // DID Web
     runtimeOnly(libs.bundles.identity)
-
-    // Registration service
-    runtimeOnly(libs.rs.core)
-    runtimeOnly(libs.rs.core.credential.service)
-    runtimeOnly(libs.rs.ext.api)
 
     // Identity Hub
     runtimeOnly(libs.ih.core.verifier)
@@ -39,7 +31,6 @@ dependencies {
 
     implementation(libs.edc.management.api)
     implementation(libs.edc.transfer.data.plane)
-//    implementation(libs.edc.transfer.pull.http.receiver)
     implementation(libs.edc.transfer.pull.http.dynamic.receiver)
 
     implementation(libs.edc.data.plane.selector.api)
