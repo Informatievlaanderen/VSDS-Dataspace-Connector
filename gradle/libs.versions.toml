@@ -5,6 +5,7 @@ format.version = "1.1"
 assertj = "3.24.2"
 awaitility = "4.2.0"
 edc = "0.4.1"
+edc-ih-fix = "0.3.1"
 jakarta-json = "2.0.1"
 junit-pioneer = "2.1.0"
 jupiter = "5.10.0"
@@ -68,10 +69,10 @@ edc-transfer-spi = { module = "org.eclipse.edc:transfer-spi", version.ref = "edc
 edc-util = { module = "org.eclipse.edc:util", version.ref = "edc" }
 edc-vault-azure = { module = "org.eclipse.edc:vault-azure", version.ref = "edc" }
 edc-vault-filesystem = { module = "org.eclipse.edc:vault-filesystem", version.ref = "edc" }
-ih-core-verifier = { module = "org.eclipse.edc:identity-hub-credentials-verifier", version.ref = "edc" }
-ih-ext-api = { module = "org.eclipse.edc:identity-hub-api", version.ref = "edc" }
-ih-ext-credentials-jwt = { module = "org.eclipse.edc:identity-hub-credentials-jwt", version.ref = "edc" }
-ih-ext-verifier-jwt = { module = "org.eclipse.edc:identity-hub-verifier-jwt", version.ref = "edc" }
+ih-core-verifier = { module = "org.eclipse.edc:identity-hub-credentials-verifier", version.ref = "edc-ih-fix" }
+ih-ext-api = { module = "org.eclipse.edc:identity-hub-api", version.ref = "edc-ih-fix" }
+ih-ext-credentials-jwt = { module = "org.eclipse.edc:identity-hub-credentials-jwt", version.ref = "edc-ih-fix" }
+ih-ext-verifier-jwt = { module = "org.eclipse.edc:identity-hub-verifier-jwt", version.ref = "edc-ih-fix" }
 jakarta-rsApi = { module = "jakarta.ws.rs:jakarta.ws.rs-api", version.ref = "rsApi" }
 jakartaJson = { module = "org.glassfish:jakarta.json", version.ref = "jakarta-json" }
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "jupiter" }
