@@ -1,12 +1,12 @@
 # Build the jar file
-FROM openjdk:18-ea-bullseye AS build
+FROM openjdk:21-ea-bullseye AS build
 
 WORKDIR /app
 COPY ./ .
 RUN ./gradlew clean build
 
 # Run the jar file
-FROM openjdk:18-ea-bullseye
+FROM openjdk:21-ea-bullseye
 WORKDIR /app
 COPY --from=build /app/federated-authority-connector/build/libs/federated-authority-connector.jar .
 

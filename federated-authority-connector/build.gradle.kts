@@ -16,6 +16,7 @@ plugins {
     `java-library`
     id("application")
     alias(libs.plugins.shadow)
+    id("com.google.cloud.tools.jib") version "3.4.1"
 }
 
 dependencies {
@@ -57,8 +58,30 @@ application {
 var distTar = tasks.getByName("distTar")
 var distZip = tasks.getByName("distZip")
 
+var appName = "federated-authority";
+
 tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
     mergeServiceFiles()
-    archiveFileName.set("federated-authority-connector.jar")
+    archiveFileName.set("$appName.jar")
     dependsOn(distTar, distZip)
+}
+
+afterEvaluate {
+    tasks.named("build") {
+        dependsOn("jibDockerBuild")
+    }
+}
+
+jib {
+    from {
+        image = "openjdk:21-ea-bullseye"
+    }
+    to {
+        image = "vsds-dataspace-connector/$appName"
+        tags = setOf("local")
+    }
+    container {
+        mainClass = application.mainClass.get()
+        args = listOf("-Dedc.fs.config=\$EDC_FS_CONFIG", "-Dfcc.directory.file=\$FCC_DIRECTORY_FILE")
+    }
 }

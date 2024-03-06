@@ -2,6 +2,7 @@ plugins {
     `java-library`
     id("application")
     alias(libs.plugins.shadow)
+    id("com.google.cloud.tools.jib") version "3.4.1"
 }
 
 group = "org.eclipse.edc"
@@ -58,8 +59,30 @@ application {
 var distTar = tasks.getByName("distTar")
 var distZip = tasks.getByName("distZip")
 
+var appName = "http-pull"
+
 tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
     mergeServiceFiles()
-    archiveFileName.set("pull-connector.jar")
+    archiveFileName.set("$appName.jar")
     dependsOn(distTar, distZip)
+}
+
+afterEvaluate {
+    tasks.named("build") {
+        dependsOn("jibDockerBuild")
+    }
+}
+
+jib {
+    from {
+        image = "openjdk:21-ea-bullseye"
+    }
+    to {
+        image = "vsds-dataspace-connector/$appName"
+        tags = setOf("local")
+    }
+    container {
+        mainClass = application.mainClass.get()
+        args = listOf("-Dedc.keystore=\$EDC_KEYSTORE", "-Dedc.keystore.password=\$EDC_KEYSTORE_PASSWORD", "-Dedc.vault=\$EDC_VAULT", "-Dedc.fs.config=\$EDC_FS_CONFIG")
+    }
 }
