@@ -26,10 +26,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class SecurityUtils {
 	public static final String PASSWORD = "123456";
@@ -59,14 +56,14 @@ public class SecurityUtils {
 		}
 	}
 
-	public void storeDidDocument(String didUrl, Integer identityHubPort, String name) throws IOException {
+	public void storeDidDocument(String didUrl, String serviceEndpoint, String name) throws IOException {
 		String baseDir = "build/resources/test/webdid/";
 		URI did = URI.create(didUrl);
 
 		Service service = Service.builder()
 				.id(URI.create(did + "#identity-hub-url"))
 				.type("IdentityHub")
-				.serviceEndpoint("http://localhost:%s/api/identity-hub".formatted(identityHubPort))
+				.serviceEndpoint(serviceEndpoint)
 				.build();
 
 		VerificationMethod verificationMethod = VerificationMethod.builder()
@@ -79,6 +76,45 @@ public class SecurityUtils {
 		DIDDocument diddoc = DIDDocument.builder()
 				.id(did)
 				.service(service)
+				.verificationMethod(verificationMethod)
+				.build();
+
+		createRootDirectory(baseDir + name);
+		JsonObject object = Json.createReader(new StringReader(diddoc.toJson())).readObject();
+
+		JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+		object.forEach(jsonBuilder::add);
+		jsonBuilder.add("authentication", Json.createArrayBuilder().add(did + "#" + name).build());
+
+		Files.writeString(Path.of(baseDir + name + "/did.json"), prettyFormatJson(jsonBuilder.build()));
+	}
+
+	public void storeDidDocumentForAuthority(String didUrl, String ihServiceEndpoint, String rsServiceEndpoint, String name) throws IOException {
+		String baseDir = "build/resources/test/webdid/";
+		URI did = URI.create(didUrl);
+
+		Service identityHub = Service.builder()
+				.id(URI.create(did + "#registration-url"))
+				.type("RegistrationUrl")
+				.serviceEndpoint(ihServiceEndpoint)
+				.build();
+
+		Service registration = Service.builder()
+				.id(URI.create(did + "#identity-hub-url"))
+				.type("IdentityHub")
+				.serviceEndpoint(rsServiceEndpoint)
+				.build();
+
+		VerificationMethod verificationMethod = VerificationMethod.builder()
+				.controller(URI.create(""))
+				.id(URI.create(did + "#" + name))
+				.type("JsonWebKey2020")
+				.publicKeyJwk(getJwk())
+				.build();
+
+		DIDDocument diddoc = DIDDocument.builder()
+				.id(did)
+				.services(List.of(identityHub, registration))
 				.verificationMethod(verificationMethod)
 				.build();
 

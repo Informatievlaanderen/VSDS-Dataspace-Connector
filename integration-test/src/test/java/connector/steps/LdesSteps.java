@@ -1,7 +1,10 @@
 package connector.steps;
 
+import com.github.dockerjava.api.command.CreateContainerCmd;
 import connector.ServerSeeder;
 import connector.containers.LdesServerContainer;
+import connector.containers.LdioContainer;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.When;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -10,18 +13,22 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.Consumer;
 
+import static connector.steps.EdcHttpPullSteps.connectors;
 import static connector.steps.PrerequisiteSteps.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class LdesServerSteps {
-	LdesServerContainer ldesServer;
-	ServerSeeder seeder;
+public class LdesSteps {
+	public static LdesServerContainer ldesServer;
+	public static LdioContainer ldio;
+	public static ServerSeeder seeder;
 	@Given("I have an LDES Server set up")
 	public void iHaveAnLDESServer() throws IOException {
 		ldesServer = (LdesServerContainer) new LdesServerContainer("ldes/ldes-server")
 				.withDefaultMongoConfiguration(mongo)
 				.waitingFor(Wait.forHealthcheck())
+				.withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) cmd -> cmd.withName("server"))
 				.withNetwork(network);
 
 		ldesServer.start();
@@ -40,5 +47,17 @@ public class LdesServerSteps {
 	public void iIngestMembersInTheLDESServer(int count) throws IOException, URISyntaxException, InterruptedException {
 		seeder.sendData("devices", count);
 		assertEquals(count, mongoRestApi.getMemberCollectionCount());
+	}
+
+	@And("I have an LDIO pipeline setup to follow {string}")
+	public void iHaveAnLDIOPipelineSetupToFollow(String participant) throws URISyntaxException, IOException, InterruptedException {
+		ldio = (LdioContainer) new LdioContainer()
+				.waitingFor(Wait.forHealthcheck())
+				.withNetwork(network)
+				.withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) cmd -> cmd.withName("ldio-client"));
+
+		ldio.start();
+
+		ldio.addLdesClientConnectorPipeline(connectors.get(participant));
 	}
 }

@@ -4,6 +4,7 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import connector.SecurityUtils;
 import org.testcontainers.containers.GenericContainer;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -24,6 +25,7 @@ public class FederatedAuthorityContainer extends GenericContainer {
 
 	Map<String, String> didConfig;
 	private String jwtAudience;
+	private String didUrl;
 
 	public FederatedAuthorityContainer(String dockerImageName) {
 		super(dockerImageName);
@@ -43,8 +45,9 @@ public class FederatedAuthorityContainer extends GenericContainer {
 
 	public FederatedAuthorityContainer withDidServer(String didServer) {
 		jwtAudience = "http://%s:8180/authority".formatted(name);
+		didUrl = "did:web:%s:%s".formatted(didServer, name);
 		didConfig = Map.of("edc.connector.name", name,
-				"edc.identity.did.url", "did:web:%s:%s".formatted(didServer, name),
+				"edc.identity.did.url", didUrl,
 				"jwt.audience", jwtAudience,
 				"edc.iam.did.web.use.https", "false",
 				"edc.keystore", "/tmp/keystore.pfx",
@@ -86,5 +89,11 @@ public class FederatedAuthorityContainer extends GenericContainer {
 
 	public String getJwtAudience() {
 		return jwtAudience;
+	}
+
+	public void generateDidFile() throws IOException {
+		var ihServiceEndpoint = "http:/%s:%s/api/identity-hub".formatted(getContainerName(), 8181);
+		var rsServiceEndpoint = "http:/%s:%s/authority".formatted(getContainerName(), 8180);
+		securityUtils.storeDidDocumentForAuthority(didUrl, ihServiceEndpoint, rsServiceEndpoint, name);
 	}
 }

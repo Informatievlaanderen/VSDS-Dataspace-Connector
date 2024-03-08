@@ -1,14 +1,12 @@
 package connector.containers;
 
 import com.github.dockerjava.api.command.CreateContainerCmd;
+import connector.DataPlaneInteractor;
 import connector.SecurityUtils;
 import connector.security.JwtGenerator;
-import foundation.identity.did.DIDDocument;
-import foundation.identity.did.Service;
-import foundation.identity.did.VerificationMethod;
-import io.fusionauth.jwks.domain.JSONWebKey;
 import jakarta.json.Json;
-import jakarta.json.JsonReader;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 import org.testcontainers.containers.GenericContainer;
 
 import java.io.IOException;
@@ -25,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import static connector.DataPlaneInteractor.dataPlaneCreationRequest;
 import static java.util.Map.entry;
 import static java.util.Map.ofEntries;
 
@@ -55,7 +54,7 @@ public class HttpPullContainer extends GenericContainer {
 
 	public HttpPullContainer() {
 		super("vsds-dataspace-connector/http-pull:local");
-		setExposedPorts(List.of(8180, 9191, 9192, 9193, 9194));
+		setExposedPorts(List.of(8180, 9191, 9192, 9193, 9194, 9291));
 	}
 
 	public HttpPullContainer withName(String name) {
@@ -139,6 +138,148 @@ public class HttpPullContainer extends GenericContainer {
 	}
 
 	public void generateDidFile() throws IOException {
-		securityUtils.storeDidDocument(didUrl, this.getMappedPort(9191), name);
+		var serviceEndpoint = "http:/%s:%s/api/identity-hub".formatted(getContainerName(), 9191);
+		securityUtils.storeDidDocument(didUrl, serviceEndpoint, name);
+	}
+
+	public JsonObject getPolicyFromProvider(HttpPullContainer provider) throws URISyntaxException, IOException, InterruptedException {
+		JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+		jsonBuilder.add("@context", Json.createObjectBuilder().add("edc", "https://w3id.org/edc/v0.0.1/ns/").build());
+		jsonBuilder.add("providerUrl", "http:/%s:%s/protocol".formatted(provider.getContainerName(), 9194));
+		jsonBuilder.add("protocol", "dataspace-protocol-http");
+
+		URI targetURI = new URI("http://localhost:%s/management/v2/catalog/request".formatted(this.getMappedPort(9193)));
+		HttpRequest httpRequest = HttpRequest.newBuilder()
+				.uri(targetURI)
+				.POST(HttpRequest.BodyPublishers.ofString(jsonBuilder.build().toString()))
+				.header("Content-Type", "application/json")
+				.build();
+
+		var response = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+		JsonObject catalog = Json.createReader(new StringReader(response.body())).readObject();
+
+		return catalog.getJsonObject("dcat:dataset")
+				.getJsonObject("odrl:hasPolicy");
+	}
+
+	public void createDataplane() throws URISyntaxException, IOException, InterruptedException {
+		String dataplaneRequest = dataPlaneCreationRequest("http:/%s".formatted(getContainerName()), 9192);
+
+		URI targetURI = new URI("http://localhost:%s/management/v2/dataplanes".formatted(this.getMappedPort(9193)));
+		HttpRequest httpRequest = HttpRequest.newBuilder()
+				.uri(targetURI)
+				.POST(HttpRequest.BodyPublishers.ofString(dataplaneRequest))
+				.header("Content-Type", "application/json")
+				.build();
+
+		client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+	}
+
+	public void createAsset(String assetName, String formatted) throws URISyntaxException, IOException, InterruptedException {
+		var assetCreationRequest = DataPlaneInteractor.assetCreationRequest(assetName, formatted);
+
+		URI targetURI = new URI("http://localhost:%s/management/v3/assets".formatted(this.getMappedPort(9193)));
+		HttpRequest httpRequest = HttpRequest.newBuilder()
+				.uri(targetURI)
+				.POST(HttpRequest.BodyPublishers.ofString(assetCreationRequest))
+				.header("Content-Type", "application/json")
+				.build();
+
+		client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+	}
+
+	public void createPolicy(String policyId) throws URISyntaxException, IOException, InterruptedException {
+		var policyCreationRequest = DataPlaneInteractor.policyCreationRequest(policyId);
+
+		URI targetURI = new URI("http://localhost:%s/management/v2/policydefinitions".formatted(this.getMappedPort(9193)));
+		HttpRequest httpRequest = HttpRequest.newBuilder()
+				.uri(targetURI)
+				.POST(HttpRequest.BodyPublishers.ofString(policyCreationRequest))
+				.header("Content-Type", "application/json")
+				.build();
+
+		client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+	}
+
+	public void createContract(String contractId, String accessPolicyId, String contractPolicyId) throws URISyntaxException, IOException, InterruptedException {
+		var contractCreationRequest = DataPlaneInteractor.contractCreationRequest(contractId, accessPolicyId, contractPolicyId);
+
+		URI targetURI = new URI("http://localhost:%s/management/v2/contractdefinitions".formatted(this.getMappedPort(9193)));
+		HttpRequest httpRequest = HttpRequest.newBuilder()
+				.uri(targetURI)
+				.POST(HttpRequest.BodyPublishers.ofString(contractCreationRequest))
+				.header("Content-Type", "application/json")
+				.build();
+
+		client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+	}
+
+	public String negotiateContract(String assetId, JsonObject policy, HttpPullContainer provider) throws URISyntaxException, IOException, InterruptedException {
+		var providerAddress = "http:/%s:9194/protocol".formatted(provider.getContainerName());
+		var providerId = "did:web:did-server:%s".formatted(provider.getContainerName().substring(1));
+
+		var contractNegotiationRequest = DataPlaneInteractor.contractNegotiationRequest(providerAddress, providerId, policy, assetId);
+
+		URI targetURI = new URI("http://localhost:%s/management/v2/contractnegotiations".formatted(this.getMappedPort(9193)));
+		HttpRequest httpRequest = HttpRequest.newBuilder()
+				.uri(targetURI)
+				.POST(HttpRequest.BodyPublishers.ofString(contractNegotiationRequest))
+				.header("Content-Type", "application/json")
+				.build();
+
+		var response = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+		return Json.createReader(new StringReader(response.body()))
+				.readObject()
+				.getString("@id");
+	}
+
+	public boolean checkForNegotiationCompletion(String activeNegotiationId) throws IOException, InterruptedException, URISyntaxException {
+		URI targetURI = new URI("http://localhost:%s/management/v2/contractnegotiations/%s".formatted(this.getMappedPort(9193), activeNegotiationId));
+
+		HttpRequest httpRequest = HttpRequest.newBuilder()
+				.uri(targetURI)
+				.GET()
+				.build();
+
+		var response = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+		return response.body().contains("FINALIZED");
+	}
+
+	public void startTransfer(String activeNegotiationId, LdioContainer ldio, String asset, HttpPullContainer provider) throws URISyntaxException, IOException, InterruptedException {
+		URI targetURI = new URI("http://localhost:%s/management/v2/contractnegotiations/%s".formatted(this.getMappedPort(9193), activeNegotiationId));
+
+		HttpRequest httpRequest = HttpRequest.newBuilder()
+				.uri(targetURI)
+				.GET()
+				.build();
+
+		var response = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+		var contractAgreementId = Json.createReader(new StringReader(response.body()))
+				.readObject()
+				.getString("contractAgreementId");
+
+		var providerAddress = "http:/%s:9194/protocol".formatted(provider.getContainerName());
+		var ldioTransferEndpoint = "http:/%s:8082/client-pipeline/token".formatted(ldio.getContainerName());
+		var transferRequest = DataPlaneInteractor.transferRequest(provider.getDidUrl(), providerAddress, contractAgreementId, asset, ldioTransferEndpoint);
+
+		targetURI = new URI("http://localhost:%s/client-pipeline/transfer".formatted(ldio.getMappedPort(8082)));
+
+		httpRequest = HttpRequest.newBuilder()
+				.uri(targetURI)
+				.header("Content-Type", "application/json")
+				.POST(HttpRequest.BodyPublishers.ofString(transferRequest))
+				.build();
+
+		response = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+		response.body().contains("FINALIZED");
+	}
+
+	public String getDidUrl() {
+		return didUrl;
 	}
 }

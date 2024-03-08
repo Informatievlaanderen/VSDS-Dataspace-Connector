@@ -48,6 +48,10 @@ public class PrerequisiteSteps {
 	public void tearDown() throws Exception {
 		EdcHttpPullSteps.connectors.forEach((string, httpPullContainer) -> httpPullContainer.stop());
 		EdcFederatedAuthoritySteps.authorities.forEach((string, authority) -> authority.stop());
+
+		LdesSteps.ldio.stop();
+		LdesSteps.ldesServer.stop();
+
 		mongo.stop();
 		mongoRestApi.stop();
 		webdid.stop();
