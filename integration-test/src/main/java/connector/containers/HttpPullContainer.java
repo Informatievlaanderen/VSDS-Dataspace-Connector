@@ -164,7 +164,7 @@ public class HttpPullContainer extends GenericContainer {
 	}
 
 	public void createDataplane() throws URISyntaxException, IOException, InterruptedException {
-		String dataplaneRequest = dataPlaneCreationRequest("http:/%s".formatted(getContainerName()), 9192);
+		String dataplaneRequest = dataPlaneCreationRequest("http:/%s".formatted(getContainerName()), 9291, 9192);
 
 		URI targetURI = new URI("http://localhost:%s/management/v2/dataplanes".formatted(this.getMappedPort(9193)));
 		HttpRequest httpRequest = HttpRequest.newBuilder()
@@ -173,7 +173,9 @@ public class HttpPullContainer extends GenericContainer {
 				.header("Content-Type", "application/json")
 				.build();
 
-		client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+		var response = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+		"".contains("");
 	}
 
 	public void createAsset(String assetName, String formatted) throws URISyntaxException, IOException, InterruptedException {

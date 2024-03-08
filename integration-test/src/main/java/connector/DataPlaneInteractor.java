@@ -5,11 +5,11 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 
 public class DataPlaneInteractor {
-	public static String dataPlaneCreationRequest(String providerUrl, int publicPort) {
+	public static String dataPlaneCreationRequest(String providerUrl, int publicPort, int controlPort) {
 		JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
 		jsonBuilder.add("@context", Json.createObjectBuilder()
 				.add("edc", "https://w3id.org/edc/v0.0.1/ns/"));
-		jsonBuilder.add("url", "%s:%s/control/transfer".formatted(providerUrl, publicPort));
+		jsonBuilder.add("url", "%s:%s/control/transfer".formatted(providerUrl, controlPort));
 		jsonBuilder.add("allowedSourceTypes", Json.createArrayBuilder()
 				.add("HttpData"));
 		jsonBuilder.add("allowedDestTypes", Json.createArrayBuilder()

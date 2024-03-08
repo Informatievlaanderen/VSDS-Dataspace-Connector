@@ -11,10 +11,12 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
+import static org.testcontainers.shaded.org.hamcrest.MatcherAssert.assertThat;
+
 public class LdioContainer extends GenericContainer {
 	private final HttpClient client = HttpClient.newHttpClient();
 	public LdioContainer() {
-		super("ghcr.io/informatievlaanderen/ldi-orchestrator:20240307162008");
+		super("ghcr.io/informatievlaanderen/ldi-orchestrator:20240308141921");
 		addExposedPorts(8082);
 		addEnv("server.port", "8082");
 		addEnv("orchestrator.pipelines", "");
@@ -37,7 +39,9 @@ public class LdioContainer extends GenericContainer {
 				.POST(HttpRequest.BodyPublishers.ofString(pipeline))
 				.build();
 
-		client.sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString());
+		var response = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+
 	}
 
 	private String ldesClientConnectorPipeline(String consumer) {
