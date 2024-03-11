@@ -1,7 +1,7 @@
 package connector.containers;
 
 import com.github.dockerjava.api.command.CreateContainerCmd;
-import connector.DataPlaneInteractor;
+import connector.DataSpaceInteractor;
 import connector.SecurityUtils;
 import connector.security.JwtGenerator;
 import jakarta.json.Json;
@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static connector.DataPlaneInteractor.dataPlaneCreationRequest;
+import static connector.DataSpaceInteractor.dataPlaneCreationRequest;
 import static java.util.Map.entry;
 import static java.util.Map.ofEntries;
 
@@ -125,7 +125,7 @@ public class HttpPullContainer extends GenericContainer {
 
 	public void registerAsParticipant(FederatedAuthorityContainer authorityContainer) throws URISyntaxException, IOException, InterruptedException {
 		var jwt = JwtGenerator.generateJwtToken(didUrl, didUrl, authorityContainer.getJwtAudience(),
-				(ECPublicKey) securityUtils.keyPair.getPublic(), (ECPrivateKey) securityUtils.keyPair.getPrivate());
+				(ECPublicKey) securityUtils.certificate.getPublicKey(), (ECPrivateKey) securityUtils.privateKey);
 
 		URI targetURI = new URI("http://localhost:%s/authority/registry/participant".formatted(authorityContainer.getMappedPort(8180)));
 		HttpRequest httpRequest = HttpRequest.newBuilder()
@@ -179,7 +179,7 @@ public class HttpPullContainer extends GenericContainer {
 	}
 
 	public void createAsset(String assetName, String formatted) throws URISyntaxException, IOException, InterruptedException {
-		var assetCreationRequest = DataPlaneInteractor.assetCreationRequest(assetName, formatted);
+		var assetCreationRequest = DataSpaceInteractor.assetCreationRequest(assetName, formatted);
 
 		URI targetURI = new URI("http://localhost:%s/management/v3/assets".formatted(this.getMappedPort(9193)));
 		HttpRequest httpRequest = HttpRequest.newBuilder()
@@ -192,7 +192,7 @@ public class HttpPullContainer extends GenericContainer {
 	}
 
 	public void createPolicy(String policyId) throws URISyntaxException, IOException, InterruptedException {
-		var policyCreationRequest = DataPlaneInteractor.policyCreationRequest(policyId);
+		var policyCreationRequest = DataSpaceInteractor.policyCreationRequest(policyId);
 
 		URI targetURI = new URI("http://localhost:%s/management/v2/policydefinitions".formatted(this.getMappedPort(9193)));
 		HttpRequest httpRequest = HttpRequest.newBuilder()
@@ -205,7 +205,7 @@ public class HttpPullContainer extends GenericContainer {
 	}
 
 	public void createContract(String contractId, String accessPolicyId, String contractPolicyId) throws URISyntaxException, IOException, InterruptedException {
-		var contractCreationRequest = DataPlaneInteractor.contractCreationRequest(contractId, accessPolicyId, contractPolicyId);
+		var contractCreationRequest = DataSpaceInteractor.contractCreationRequest(contractId, accessPolicyId, contractPolicyId);
 
 		URI targetURI = new URI("http://localhost:%s/management/v2/contractdefinitions".formatted(this.getMappedPort(9193)));
 		HttpRequest httpRequest = HttpRequest.newBuilder()
@@ -221,7 +221,7 @@ public class HttpPullContainer extends GenericContainer {
 		var providerAddress = "http:/%s:9194/protocol".formatted(provider.getContainerName());
 		var providerId = "did:web:did-server:%s".formatted(provider.getContainerName().substring(1));
 
-		var contractNegotiationRequest = DataPlaneInteractor.contractNegotiationRequest(providerAddress, providerId, policy, assetId);
+		var contractNegotiationRequest = DataSpaceInteractor.contractNegotiationRequest(providerAddress, providerId, policy, assetId);
 
 		URI targetURI = new URI("http://localhost:%s/management/v2/contractnegotiations".formatted(this.getMappedPort(9193)));
 		HttpRequest httpRequest = HttpRequest.newBuilder()
@@ -266,7 +266,7 @@ public class HttpPullContainer extends GenericContainer {
 
 		var providerAddress = "http:/%s:9194/protocol".formatted(provider.getContainerName());
 		var ldioTransferEndpoint = "http:/%s:8082/client-pipeline/token".formatted(ldio.getContainerName());
-		var transferRequest = DataPlaneInteractor.transferRequest(provider.getDidUrl(), providerAddress, contractAgreementId, asset, ldioTransferEndpoint);
+		var transferRequest = DataSpaceInteractor.transferRequest(provider.getDidUrl(), providerAddress, contractAgreementId, asset, ldioTransferEndpoint);
 
 		targetURI = new URI("http://localhost:%s/client-pipeline/transfer".formatted(ldio.getMappedPort(8082)));
 

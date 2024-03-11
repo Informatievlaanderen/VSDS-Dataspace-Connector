@@ -7,7 +7,9 @@ import connector.containers.LdioContainer;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.When;
+import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.shaded.org.awaitility.Awaitility;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -59,5 +61,11 @@ public class LdesSteps {
 		ldio.start();
 
 		ldio.addLdesClientConnectorPipeline(connectors.get(participant));
+	}
+
+	@And("the LDIO has started")
+	public void theLDIOHasStarted() {
+		Awaitility.await()
+				.until(() -> ldio.getLogs().contains("Parsing response for:"));
 	}
 }

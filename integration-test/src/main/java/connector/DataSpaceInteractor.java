@@ -4,7 +4,7 @@ import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 
-public class DataPlaneInteractor {
+public class DataSpaceInteractor {
 	public static String dataPlaneCreationRequest(String providerUrl, int publicPort, int controlPort) {
 		JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
 		jsonBuilder.add("@context", Json.createObjectBuilder()

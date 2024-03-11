@@ -19,3 +19,4 @@ Feature: Existing full blown VSDS E2E test
     And Participant "consumer" starts negotiating a contract with "provider" for asset "devices"
     Then I wait for "consumer"'s contract negotiation to finish
     And Participant "consumer" starts the transfer of "devices" in "provider"
+    And the LDIO has started

@@ -54,7 +54,7 @@ public class LdioContainer extends GenericContainer {
 						.add("urls", "http:/%s:9291/public".formatted(consumer))
 						.add("connector-transfer-url", "http:/%s:9193/management/v2/transferprocesses".formatted(consumer))
 						.add("proxy-url-to-replace", "http://localhost:8081/devices")
-						.add("proxy-url-replacement", "http://%s:9291/public".formatted(consumer))
+						.add("proxy-url-replacement", "http:/%s:9291/public".formatted(consumer))
 						.add("source-format", "application/n-quads")));
 		jsonBuilder.add("outputs", Json.createArrayBuilder()
 				.add(Json.createObjectBuilder()

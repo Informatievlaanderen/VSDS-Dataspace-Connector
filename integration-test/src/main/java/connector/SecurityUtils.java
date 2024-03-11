@@ -30,30 +30,25 @@ import java.util.*;
 
 public class SecurityUtils {
 	public static final String PASSWORD = "123456";
-	public KeyPair keyPair;
+	public PrivateKey privateKey;
 	public X509Certificate certificate;
 	public KeyStore keyStore;
 
-	public void generateECKey(String alias) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, IOException, KeyStoreException, CertificateEncodingException, SignatureException, InvalidKeyException {
+	public void generateECKey(String alias) throws NoSuchAlgorithmException, IOException, KeyStoreException, CertificateEncodingException, SignatureException, InvalidKeyException, UnrecoverableKeyException {
 		String baseDir = "build/resources/test/";
+		char[] password = "123456".toCharArray();
 
-		keyPair = SecurityUtils.generateECKeyPair();
-		PrivateKey priv = keyPair.getPrivate();
-		PublicKey pub = keyPair.getPublic();
+		keyStore = getOrGenerateKeyStore(baseDir, alias, "keystore", password);
 
-		certificate = createCert(keyPair);
+		privateKey = (PrivateKey) keyStore.getKey(alias, password);
+
+		certificate = (X509Certificate) keyStore.getCertificate(alias);
 
 		createRootDirectory(baseDir + alias);
-		writePemFile(priv, "PRIVATE KEY", baseDir + alias + "/private.pem");
-		writePemFile(pub, "PUBLIC KEY", baseDir + alias + "/public.pem");
+		writePemFile(privateKey, "PRIVATE KEY", baseDir + alias + "/private.pem");
+		writePemFile(certificate.getPublicKey(), "PUBLIC KEY", baseDir + alias + "/public.pem");
 		writePemFile(certificate, baseDir + alias + "/cert.pem");
-		writeVaultProperties(priv, certificate, baseDir + alias + "/vault.properties");
-
-		try {
-			keyStore = storeSecretKeyInKeyStore(priv, certificate, alias, "123456", baseDir, "keystore", "123456");
-		} catch (CertificateException e) {
-			throw new RuntimeException(e);
-		}
+		writeVaultProperties(privateKey, certificate, baseDir + alias + "/vault.properties");
 	}
 
 	public void storeDidDocument(String didUrl, String serviceEndpoint, String name) throws IOException {
@@ -130,11 +125,34 @@ public class SecurityUtils {
 
 	public Map<String, Object> getJwk() {
 		Map<String, Object> jwk = new HashMap<>();
-		PublicKey publicKey = keyPair.getPublic();
+		PublicKey publicKey = certificate.getPublicKey();
 		JSONWebKey jsonWebKey = JSONWebKey.build(publicKey);
 		JsonReader reader = Json.createReader(new StringReader(jsonWebKey.toString()));
 		reader.readObject().forEach((string, jsonValue) -> jwk.put(string, ((JsonString) jsonValue).getString()));
 		return jwk;
+	}
+
+	private KeyStore getOrGenerateKeyStore(String keyStoreFolderPath, String secretEntryAliasName,
+	                                       String keyStoreName, char[] password) {
+		File file = new File("%s%s/%s.pfx".formatted(keyStoreFolderPath, secretEntryAliasName, keyStoreName));
+
+		if (file.exists()) {
+			try {
+				return KeyStore.getInstance(file, password);
+			} catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException e) {
+				throw new RuntimeException(e);
+			}
+		} else {
+			try {
+				KeyPair keyPair = SecurityUtils.generateECKeyPair();
+				certificate = createCert(keyPair);
+
+				return generateKeyStore(file, keyPair.getPrivate(), certificate, secretEntryAliasName, password, password);
+			} catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidAlgorithmParameterException |
+			         SignatureException | InvalidKeyException | CertificateException | KeyStoreException | IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
 	}
 
 	private static void createRootDirectory(String directory) throws IOException {
@@ -216,28 +234,23 @@ public class SecurityUtils {
 	 * @param key                  - the key itself
 	 * @param secretEntryAliasName - alias name for the key
 	 * @param secretPassword       - password for the key
-	 * @param keyStoreFolderPath   - file system path to store the keystore
-	 * @param keyStoreName         - filename of the keystore file to be saved
 	 * @param keyStorePassword     - password to be used for accessing the key store
 	 * @return
 	 */
-	private static KeyStore storeSecretKeyInKeyStore(PrivateKey key, X509Certificate x509Certificate,
-	                                                 String secretEntryAliasName, String secretPassword,
-	                                                 String keyStoreFolderPath, String keyStoreName,
-	                                                 String keyStorePassword) throws KeyStoreException,
+	private static KeyStore generateKeyStore(File keystore,
+	                                         PrivateKey key, X509Certificate x509Certificate,
+	                                         String secretEntryAliasName, char[] secretPassword,
+	                                         char[] keyStorePassword) throws KeyStoreException,
 			CertificateException, IOException, NoSuchAlgorithmException {
 
 		// getting the algorithm
 		KeyStore keyStore = KeyStore.getInstance("PKCS12");  //JCEKS PKCS12
 
-		char[] keyStorePassCharArray = keyStorePassword.toCharArray(); // changeit
-		char[] secretEntryPassCharArray = secretPassword.toCharArray();
-
 		// initializing the empty stream for new keystore / existing keystore would need inputStream
-		keyStore.load(null, keyStorePassCharArray);
+		keyStore.load(null, keyStorePassword);
 
 		// the protection param is used to protect the secret entry
-		KeyStore.ProtectionParameter protectionParam = new KeyStore.PasswordProtection(secretEntryPassCharArray);
+		KeyStore.ProtectionParameter protectionParam = new KeyStore.PasswordProtection(secretPassword);
 
 
 		KeyStore.Entry privateKeyEntry = new KeyStore.PrivateKeyEntry(key, new X509Certificate[]{x509Certificate});
@@ -246,9 +259,8 @@ public class SecurityUtils {
 		keyStore.setEntry(secretEntryAliasName, privateKeyEntry, protectionParam); //"secretKeyAlias"
 
 		//Storing the KeyStore object
-		File file = new File("%s%s/%s.pfx".formatted(keyStoreFolderPath, secretEntryAliasName, keyStoreName));
-		java.io.FileOutputStream fos = new java.io.FileOutputStream(file);
-		keyStore.store(fos, keyStorePassCharArray);
+		java.io.FileOutputStream fos = new java.io.FileOutputStream(keystore);
+		keyStore.store(fos, keyStorePassword);
 
 		return keyStore;
 	}
