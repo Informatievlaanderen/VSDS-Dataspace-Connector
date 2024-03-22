@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 
 include("http-pull-connector")
 include("federated-authority-connector")
+include("integration-test")

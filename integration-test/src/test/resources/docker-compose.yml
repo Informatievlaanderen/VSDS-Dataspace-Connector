@@ -1,0 +1,90 @@
+version: '3.3'
+services:
+
+  provider-connector:
+    image: ghcr.io/informatievlaanderen/vsds-dataspace-connector/http-pull:latest
+    environment:
+      - EDC_FS_CONFIG=/resources/provider-configuration.properties
+
+      - EDC_KEYSTORE=/certs/cert.pfx
+      - EDC_KEYSTORE_PASSWORD=123456
+      - EDC_VAULT=/resources/provider-vault.properties
+    ports:
+      - 19191:19191
+      - 19193:19193
+      - 19194:19194
+      - 19291:19291
+      - 19192:19192
+    volumes:
+      - ./http-pull-provider:/resources
+      - ./certs:/certs
+    networks:
+      - ldes
+
+  consumer-connector:
+    image: ghcr.io/informatievlaanderen/vsds-dataspace-connector/http-pull:latest
+    environment:
+      - EDC_FS_CONFIG=/resources/consumer-configuration.properties
+
+      - EDC_KEYSTORE=/certs/cert.pfx
+      - EDC_KEYSTORE_PASSWORD=123456
+      - EDC_VAULT=/resources/consumer-vault.properties
+    ports:
+      - 29191:29191
+      - 29193:29193
+      - 29194:29194
+      - 29291:29291
+      - 29192:29192
+    volumes:
+      - ./http-pull-consumer:/resources
+      - ./certs:/certs
+    networks:
+      - ldes
+
+  federated-authority:
+    image: ghcr.io/informatievlaanderen/vsds-dataspace-connector/federated-authority:latest
+    environment:
+      - EDC_FS_CONFIG=/resources/authority-configuration.properties
+      - FCC_DIRECTORY_FILE=/resources/nodes-dc.json
+
+      - EDC_KEYSTORE=/certs/cert.pfx
+      - EDC_KEYSTORE_PASSWORD=123456
+      - EDC_VAULT=/resources/authority-vault.properties
+    depends_on: [ provider-connector ]
+    volumes:
+      - ./federated-authority:/resources
+      - ./certs:/certs
+    ports:
+      - "38180:8180"
+      - "38181:8181"
+    networks:
+      - ldes
+
+  mongodb-rest-api:
+    image: ghcr.io/informatievlaanderen/mongodb-rest-api:${MONGODB_REST_API_TAG:-latest}
+    environment:
+      - SILENT=false
+      - CONNECTION_URI=mongodb://ldes-mongodb:27017
+    ports:
+      - ${MONGODB_REST_API_PORT:-9019}:80
+    networks:
+      - ldes
+
+  ldio-workbench:
+    image: ghcr.io/informatievlaanderen/ldi-orchestrator:latest
+    environment:
+      - SPRING_CONFIG_NAME=application
+      - SPRING_CONFIG_LOCATION=/config/
+    volumes:
+      - ./ldio-config.yml:/config/application.yml:ro
+    ports:
+      - 8082:8082
+    networks:
+      - ldes
+    profiles:
+      - delay-started
+
+
+networks:
+  ldes:
+    name: ldes_connector_network
