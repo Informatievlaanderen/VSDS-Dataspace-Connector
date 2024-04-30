@@ -18,21 +18,9 @@ dependencies {
 
     implementation(libs.edc.control.plane.core)
     implementation(libs.edc.dsp)
-
-    // Filesystem config
     implementation(libs.edc.configuration.filesystem)
     implementation(libs.edc.vault.filesystem)
-
-    // DID Web
-    runtimeOnly(libs.bundles.identity)
-
-    // Identity Hub
-    runtimeOnly(libs.ih.core.verifier)
-    runtimeOnly(libs.ih.ext.api)
-    runtimeOnly(libs.ih.ext.credentials.jwt)
-    runtimeOnly(libs.ih.ext.verifier.jwt)
-
-
+    implementation(libs.edc.iam.mock)
     implementation(libs.edc.management.api)
     implementation(libs.edc.transfer.data.plane)
     implementation(libs.edc.transfer.pull.http.dynamic.receiver)
