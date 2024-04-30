@@ -1,20 +1,15 @@
 # VSDS Dataspace connector
 
-This repository provides connector builds that can be used to create a dataspace with an LDES Server.
+This repository provides a connector build that can be used to create a dataspace with an LDES Server.
 
-To create the images run the following docker commands from the root directory:
+To create the image, run the following docker command from the root directory:
 
 1. Image for consumer and provider connectors
     ```bash
     docker build -t vsds-dataspace-connector:local . -f ./http-pull-connector/Dockerfile
     ```
-
-2. Image for the federated authority connector
-    ```bash
-    docker build -t vsds-federated-authority-connector:local . -f ./federated-authority-connector/Dockerfile
-    ```
-
-   > **Note**: These connectors are not production ready and should only be used for development purposes.
+   
+   > **Note**: This connector is not production ready and should only be used for development purposes.
 
 3. E2E testing
    - [Basic flow](https://github.com/Informatievlaanderen/VSDS-LDES-E2E-testing/tree/main/tests/034.dataspace-connector-consumer-and-provider)

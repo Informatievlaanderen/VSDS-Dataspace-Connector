@@ -15,4 +15,3 @@ dependencyResolutionManagement {
 }
 
 include("http-pull-connector")
-include("federated-authority-connector")
