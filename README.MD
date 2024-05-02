@@ -6,7 +6,7 @@ To create the image, run the following docker command from the root directory:
 
 1. Image for consumer and provider connectors
     ```bash
-    docker build -t vsds-dataspace-connector:local . -f ./http-pull-connector/Dockerfile
+    docker build -t vsds-dataspace-connector:local . -f ./http-plane-headers-extension/Dockerfile
     ```
    
    > **Note**: This connector is not production ready and should only be used for development purposes.
