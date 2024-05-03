@@ -1,0 +1,35 @@
+name: 1.a Build & Test Project
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Maven Central Repository
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'zulu'
+          server-id: ossrh
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+          gpg-private-key: ${{ secrets.OSSRH_PGP_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+      - name: Publish Package
+        run: ./gradlew clean build publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.OSSRH_PGP_SECRET_KEY_PASSPHRASE }}
