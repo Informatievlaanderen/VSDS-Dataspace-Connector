@@ -6,7 +6,7 @@ plugins {
     alias(libs.plugins.shadow)
 }
 
-group = "be.vlaanderen.informatievlaanderen.ldes"
+group = "org.eclipse.edc"
 version = "1.0.0-SNAPSHOT"
 
 repositories {
@@ -59,7 +59,7 @@ tasks.register<Jar>("sourcesJar") {
 publishing {
     publications {
         val publication = create<MavenPublication>("shadowJar") {
-            groupId = "${project.group}"
+            groupId = "be.vlaanderen.informatievlaanderen"
             artifactId = "http-plane-headers-extension"
 
             artifact(tasks["javadocJar"])
