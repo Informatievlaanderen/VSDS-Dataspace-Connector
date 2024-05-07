@@ -25,11 +25,11 @@ jobs:
           gpg-private-key: ${{ secrets.OSSRH_PGP_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-      - name: Publish Package
-        run: ./gradlew clean build publish
+        uses: gradle/gradle-build-action@v3
+      - name: Build & Publish Package
+        run: ./gradlew clean build publish --stacktrace
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-          MAVEN_GPG_PASSPHRASE: ${{ secrets.OSSRH_PGP_SECRET_KEY_PASSPHRASE }}
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          OSSRH_PGP_PRIVATE_KEY: ${{ secrets.OSSRH_PGP_PRIVATE_KEY }}
+          OSSRH_PGP_SECRET_KEY_PASSPHRASE: ${{ secrets.OSSRH_PGP_SECRET_KEY_PASSPHRASE }}

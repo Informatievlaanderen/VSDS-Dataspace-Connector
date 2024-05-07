@@ -1,97 +1,13 @@
 plugins {
     `java-library`
     id("application")
-    id("maven-publish")
-    id("signing")
+    `maven-publish`
+    signing
     alias(libs.plugins.shadow)
 }
 
-group = "org.eclipse.edc"
-version = "1.0.0"
-
-tasks.register<Jar>("sourcesJar") {
-    from(sourceSets.getByName("main").allSource)
-    archiveClassifier = "sources"
-}
-
-tasks.register<Jar>("javadocJar") {
-    from(tasks.named("javadoc"))
-    archiveClassifier = "javadoc"
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("mavenJava") {
-            artifact("build/libs/http-plane-headers-extension.jar")
-            artifact(tasks.named("javadocJar"))
-            artifact(tasks.named("sourcesJar"))
-
-            signing {
-                sign(publishing.publications["mavenJava"])
-            }
-
-            pom {
-                developers {
-                    developer {
-                        name = "Ferre"
-                        email = "Ferre@users.noreply.github.com"
-                        organization = "Cegeka"
-                        organizationUrl = "http://www.sonatype.com"
-                    }
-                    developer {
-                        name = "Jonas"
-                        email = "Jonas@users.noreply.github.com"
-                        organization = "Cegeka"
-                        organizationUrl = "http://www.sonatype.com"
-                    }
-                    developer {
-                        name = "Pieter-Jan"
-                        email = "Pieter-Jan@users.noreply.github.com"
-                        organization = "Cegeka"
-                        organizationUrl = "http://www.sonatype.com"
-                    }
-                }
-                licenses {
-                    license {
-                        name = "EUPL"
-                        url = "https://eupl.eu/1.2/en"
-                    }
-                }
-                scm {
-                    connection = "scm:git:git@github.com:Informatievlaanderen/VSDS-Dataspace-Connector.git"
-                    developerConnection = "scm:git:git@github.com:Informatievlaanderen/VSDS-Dataspace-Connector.git"
-                    url = "git@github.com:Informatievlaanderen/VSDS-Dataspace-Connector.git"
-                    tag = "HEAD"
-                }
-            }
-        }
-    }
-    repositories {
-        maven {
-            name = "ossrh"
-            url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots")
-            credentials {
-                username = System.getenv("OSSRH_USERNAME")
-                password = System.getenv("OSSRH_PASSWORD")
-            }
-            mavenContent {
-                snapshotsOnly()
-            }
-        }
-        maven {
-            name = "ossrh"
-            url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-            credentials {
-                username = System.getenv("OSSRH_USERNAME")
-                password = System.getenv("OSSRH_PASSWORD")
-            }
-            mavenContent {
-                releasesOnly()
-            }
-        }
-    }
-}
-
+group = "be.vlaanderen.informatievlaanderen.ldes"
+version = "1.0.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -130,13 +46,91 @@ application {
 var distTar = tasks.getByName("distTar")
 var distZip = tasks.getByName("distZip")
 
-tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
-    mergeServiceFiles()
-    archiveFileName.set("http-plane-headers-extension.jar")
-    archiveBaseName.set("http-plane-headers-extension")
-    dependsOn(distTar, distZip)
+tasks.register<Jar>("javadocJar") {
+    archiveClassifier = "javadoc"
+    from(tasks.named("javadoc"))
 }
 
-tasks.named("publishMavenJavaPublicationToOssrhRepository") {
-    dependsOn("shadowJar")
+tasks.register<Jar>("sourcesJar") {
+    archiveClassifier = "sources"
+    from(sourceSets.getByName("main").allJava)
+}
+
+publishing {
+    publications {
+        val publication = create<MavenPublication>("shadowJar") {
+            groupId = "${project.group}"
+            artifactId = "http-plane-headers-extension"
+
+            artifact(tasks["javadocJar"])
+            artifact(tasks["sourcesJar"])
+
+            pom {
+                developers {
+                    developer {
+                        name = "Ferre"
+                        email = "Ferre@users.noreply.github.com"
+                        organization = "Cegeka"
+                        organizationUrl = "https://www.cegeka.com/"
+                    }
+                    developer {
+                        name = "Jonas"
+                        email = "Jonas@users.noreply.github.com"
+                        organization = "Cegeka"
+                        organizationUrl = "https://www.cegeka.com/"
+                    }
+                    developer {
+                        name = "Pieter-Jan"
+                        email = "Pieter-Jan@users.noreply.github.com"
+                        organization = "Cegeka"
+                        organizationUrl = "https://www.cegeka.com/"
+                    }
+                    developer {
+                        name = "Yalz"
+                        email = "Yalz@users.noreply.github.com"
+                        organization = "Cegeka"
+                        organizationUrl = "https://www.cegeka.com/"
+                    }
+                }
+                licenses {
+                    license {
+                        name = "EUPL"
+                        url = "https://eupl.eu/1.2/en"
+                    }
+                }
+                scm {
+                    connection = "scm:git:git@github.com:Informatievlaanderen/VSDS-Dataspace-Connector.git"
+                    developerConnection = "scm:git:git@github.com:Informatievlaanderen/VSDS-Dataspace-Connector.git"
+                    url = "git@github.com:Informatievlaanderen/VSDS-Dataspace-Connector.git"
+                    tag = "HEAD"
+                }
+            }
+        }
+        project.shadow.component(publication)
+    }
+    signing {
+        val signingKey = if(System.getenv("OSSRH_PGP_PRIVATE_KEY") != null) System.getenv("OSSRH_PGP_PRIVATE_KEY").trimIndent() else ""
+        val signingPassword = System.getenv("OSSRH_PGP_SECRET_KEY_PASSPHRASE")
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign(publishing.publications["shadowJar"])
+    }
+    repositories {
+        maven {
+            val releasesRepoUrl = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+            val snapshotsRepoUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots")
+            name = "ossrh"
+            url = if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
+            credentials {
+                username = System.getenv("OSSRH_USERNAME")
+                password = System.getenv("OSSRH_PASSWORD")
+            }
+        }
+    }
+}
+
+project.tasks.findByName("jar")?.enabled = false
+
+tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
+    mergeServiceFiles()
+    dependsOn(distTar, distZip)
 }
