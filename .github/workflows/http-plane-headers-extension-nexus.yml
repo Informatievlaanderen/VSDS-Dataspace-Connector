@@ -1,4 +1,4 @@
-name: 1.a Build & Test Project
+name: 1.a Build & Deploy Nexus Artifact
 
 on:
   workflow_dispatch:
@@ -14,16 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Maven Central Repository
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'zulu'
-          server-id: ossrh
-          server-username: MAVEN_USERNAME
-          server-password: MAVEN_PASSWORD
-          gpg-private-key: ${{ secrets.OSSRH_PGP_PRIVATE_KEY }}
-          gpg-passphrase: MAVEN_GPG_PASSPHRASE
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v3
       - name: Build & Publish Package

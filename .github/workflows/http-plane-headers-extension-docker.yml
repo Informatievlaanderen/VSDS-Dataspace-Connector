@@ -1,4 +1,4 @@
-name: 1.b Build & Test Project
+name: 1.b Build & Deploy Docker Image
 
 on:
   workflow_dispatch:
