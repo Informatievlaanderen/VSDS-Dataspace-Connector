@@ -14,5 +14,4 @@ dependencyResolutionManagement {
     }
 }
 
-include("http-pull-connector")
-include("federated-authority-connector")
+include("http-plane-headers-extension")
