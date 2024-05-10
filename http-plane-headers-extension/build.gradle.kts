@@ -59,7 +59,7 @@ tasks.register<Jar>("sourcesJar") {
 publishing {
     publications {
         val publication = create<MavenPublication>("shadowJar") {
-            groupId = "be.vlaanderen.informatievlaanderen"
+            groupId = "be.vlaanderen.informatievlaanderen.ldes"
             artifactId = "http-plane-headers-extension"
 
             artifact(tasks["javadocJar"])
