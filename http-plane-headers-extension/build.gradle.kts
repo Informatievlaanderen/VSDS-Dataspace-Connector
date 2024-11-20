@@ -15,18 +15,23 @@ repositories {
 
 dependencies {
 
+    implementation(libs.bundles.edc.connector)
+
+
     implementation(libs.edc.data.plane.util)
     implementation(libs.edc.util)
-    implementation(libs.edc.jersey.core)
+    implementation(libs.edc.jetty.core)
+    implementation(libs.edr.store.core)
 
     implementation(libs.edc.control.plane.core)
     implementation(libs.edc.dsp)
     implementation(libs.edc.configuration.filesystem)
-    implementation(libs.edc.vault.filesystem)
+//    implementation(libs.edc.vault.hashicorp)
     implementation(libs.edc.iam.mock)
     implementation(libs.edc.management.api)
-    implementation(libs.edc.transfer.data.plane)
+    implementation(libs.edc.transfer.data.plane.signaling)
     implementation(libs.edc.transfer.pull.http.dynamic.receiver)
+    implementation(libs.edc.web.spi)
 
     implementation(libs.edc.control.plane.api.client)
     implementation(libs.edc.data.plane.http.spi)

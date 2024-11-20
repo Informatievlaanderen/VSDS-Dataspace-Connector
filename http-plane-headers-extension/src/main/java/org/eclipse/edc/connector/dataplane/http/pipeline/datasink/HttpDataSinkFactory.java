@@ -5,10 +5,10 @@ import org.eclipse.edc.connector.dataplane.http.spi.HttpRequestParamsProvider;
 import org.eclipse.edc.connector.dataplane.spi.pipeline.DataSink;
 import org.eclipse.edc.connector.dataplane.spi.pipeline.DataSinkFactory;
 import org.eclipse.edc.dataaddress.httpdata.spi.HttpDataAddressSchema;
-import org.eclipse.edc.spi.http.EdcHttpClient;
+import org.eclipse.edc.http.spi.EdcHttpClient;
 import org.eclipse.edc.spi.monitor.Monitor;
 import org.eclipse.edc.spi.result.Result;
-import org.eclipse.edc.spi.types.domain.transfer.DataFlowRequest;
+import org.eclipse.edc.spi.types.domain.transfer.DataFlowStartMessage;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.ExecutorService;
@@ -40,30 +40,30 @@ public class HttpDataSinkFactory implements DataSinkFactory {
     }
 
     @Override
-    public boolean canHandle(DataFlowRequest request) {
-        return HTTP_DATA_TYPE.equals(request.getDestinationDataAddress().getType());
+    public String supportedType() {
+        return HTTP_DATA_TYPE;
     }
 
     @Override
-    public @NotNull Result<Void> validateRequest(DataFlowRequest request) {
-        try {
-            createSink(request);
-        } catch (Exception e) {
-            return Result.failure("Failed to build HttpDataSink: " + e.getMessage());
-        }
-        return Result.success();
-    }
-
-    @Override
-    public DataSink createSink(DataFlowRequest request) {
+    public DataSink createSink(DataFlowStartMessage dataFlowStartMessage) {
         return HttpDataSink.Builder.newInstance()
-                .params(requestParamsProvider.provideSinkParams(request))
-                .requestId(request.getId())
+                .params(requestParamsProvider.provideSinkParams(dataFlowStartMessage))
+                .requestId(dataFlowStartMessage.getId())
                 .partitionSize(partitionSize)
                 .httpClient(httpClient)
                 .executorService(executorService)
                 .monitor(monitor)
                 .requestFactory(requestFactory)
                 .build();
+    }
+
+    @Override
+    public @NotNull Result<Void> validateRequest(DataFlowStartMessage dataFlowStartMessage) {
+        try {
+            createSink(dataFlowStartMessage);
+        } catch (Exception e) {
+            return Result.failure("Failed to build HttpDataSink: " + e.getMessage());
+        }
+        return Result.success();
     }
 }

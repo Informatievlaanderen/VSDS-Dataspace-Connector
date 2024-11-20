@@ -6,10 +6,10 @@ import org.eclipse.edc.connector.dataplane.http.spi.HttpRequestParamsProvider;
 import org.eclipse.edc.connector.dataplane.spi.pipeline.DataSource;
 import org.eclipse.edc.connector.dataplane.spi.pipeline.DataSourceFactory;
 import org.eclipse.edc.dataaddress.httpdata.spi.HttpDataAddressSchema;
-import org.eclipse.edc.spi.http.EdcHttpClient;
+import org.eclipse.edc.http.spi.EdcHttpClient;
 import org.eclipse.edc.spi.monitor.Monitor;
 import org.eclipse.edc.spi.result.Result;
-import org.eclipse.edc.spi.types.domain.transfer.DataFlowRequest;
+import org.eclipse.edc.spi.types.domain.transfer.DataFlowStartMessage;
 import org.jetbrains.annotations.NotNull;
 
 import static org.eclipse.edc.dataaddress.httpdata.spi.HttpDataAddressSchema.HTTP_DATA_TYPE;
@@ -32,32 +32,32 @@ public class HttpDataSourceFactory implements DataSourceFactory {
     }
 
     @Override
-    public boolean canHandle(DataFlowRequest request) {
-        return HTTP_DATA_TYPE.equals(request.getSourceDataAddress().getType());
+    public String supportedType() {
+        return HTTP_DATA_TYPE;
     }
 
     @Override
-    public @NotNull Result<Void> validateRequest(DataFlowRequest request) {
-        try {
-            createSource(request);
-        } catch (Exception e) {
-            return Result.failure("Failed to build ExtendedHttpDataSource: " + e.getMessage());
-        }
-        return Result.success();
-    }
-
-    @Override
-    public DataSource createSource(DataFlowRequest request) {
+    public DataSource createSource(DataFlowStartMessage dataFlowStartMessage) {
         var dataAddress = HttpDataAddress.Builder.newInstance()
-                .copyFrom(request.getSourceDataAddress())
+                .copyFrom(dataFlowStartMessage.getSourceDataAddress())
                 .build();
         return HttpDataSource.Builder.newInstance()
                 .httpClient(httpClient)
                 .monitor(monitor)
-                .requestId(request.getId())
+                .requestId(dataFlowStartMessage.getId())
                 .name(dataAddress.getName())
-                .params(requestParamsProvider.provideSourceParams(request))
+                .params(requestParamsProvider.provideSourceParams(dataFlowStartMessage))
                 .requestFactory(requestFactory)
                 .build();
+    }
+
+    @Override
+    public @NotNull Result<Void> validateRequest(DataFlowStartMessage dataFlowStartMessage) {
+        try {
+            createSource(dataFlowStartMessage);
+        } catch (Exception e) {
+            return Result.failure("Failed to build ExtendedHttpDataSource: " + e.getMessage());
+        }
+        return Result.success();
     }
 }
