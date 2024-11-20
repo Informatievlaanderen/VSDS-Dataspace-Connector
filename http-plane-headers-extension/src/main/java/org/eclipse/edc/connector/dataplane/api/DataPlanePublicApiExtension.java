@@ -70,12 +70,12 @@ public class DataPlanePublicApiExtension implements ServiceExtension {
     public void initialize(ServiceExtensionContext context) {
         var validationEndpoint = context.getConfig().getString(CONTROL_PLANE_VALIDATION_ENDPOINT);
         var dataAddressResolver = new ConsumerPullTransferDataAddressResolver(httpClient, validationEndpoint, typeManager.getMapper());
-        var configuration = webServiceConfigurer.configure(context.getConfig(), webServer, PUBLIC_SETTINGS);
+        webServiceConfigurer.configure(context.getConfig(), webServer, PUBLIC_SETTINGS);
 
         var sinkFactory = new ApiDataSinkFactory(context.getMonitor(), executorContainer.getExecutorService());
         pipelineService.registerFactory(sinkFactory);
 
         var publicApiController = new ExtendedDataPlanePublicApiController(pipelineService, dataAddressResolver);
-        webService.registerResource(configuration.getPath(), publicApiController);
+        webService.registerResource(PUBLIC_CONTEXT_ALIAS, publicApiController);
     }
 }
